@@ -1,0 +1,50 @@
+{
+  "smartphone": [
+    { "month": "January", "discountMultiplier": 0.05, "event": "Republic Day Sale" },
+    { "month": "February", "discountMultiplier": 0.02, "event": "Valentine's Offers" },
+    { "month": "March", "discountMultiplier": 0.0, "event": "None" },
+    { "month": "April", "discountMultiplier": 0.0, "event": "None" },
+    { "month": "May", "discountMultiplier": 0.08, "event": "Summer Sale" },
+    { "month": "June", "discountMultiplier": 0.0, "event": "None" },
+    { "month": "July", "discountMultiplier": 0.05, "event": "Prime Day" },
+    { "month": "August", "discountMultiplier": 0.08, "event": "Independence Day Sale" },
+    { "month": "September", "discountMultiplier": 0.15, "event": "Pre-Festive Sale" },
+    { "month": "October", "discountMultiplier": 0.25, "event": "Big Billion Days / Great Indian Festival" },
+    { "month": "November", "discountMultiplier": 0.10, "event": "Black Friday" },
+    { "month": "December", "discountMultiplier": 0.12, "event": "Year-End Clearance" }
+  ],
+  "electronics": [
+    { "month": "January", "discountMultiplier": 0.05, "event": "Republic Day Sale" },
+    { "month": "February", "discountMultiplier": 0.02, "event": "Valentine's Offers" },
+    { "month": "March", "discountMultiplier": 0.0, "event": "None" },
+    { "month": "April", "discountMultiplier": 0.0, "event": "None" },
+    { "month": "May", "discountMultiplier": 0.10, "event": "Summer AC/Fridge Sale" },
+    { "month": "June", "discountMultiplier": 0.0, "event": "None" },
+    { "month": "July", "discountMultiplier": 0.05, "event": "Prime Day" },
+    { "month": "August", "discountMultiplier": 0.08, "event": "Independence Day Sale" },
+    { "month": "September", "discountMultiplier": 0.10, "event": "Pre-Festive Sale" },
+    { "month": "October", "discountMultiplier": 0.25, "event": "Festive Deals" },
+    { "month": "November", "discountMultiplier": 0.10, "event": "Black Friday" },
+    { "month": "December", "discountMultiplier": 0.12, "event": "Year-End Clearance" }
+  ],
+  "cars": [
+    { "month": "January", "discountMultiplier": 0.0, "event": "Price Hike Period" },
+    { "month": "February", "discountMultiplier": 0.02, "event": "Corporate Discounts" },
+    { "month": "March", "discountMultiplier": 0.08, "event": "Financial Year-End / Depreciation Booking" },
+    { "month": "April", "discountMultiplier": 0.0, "event": "None" },
+    { "month": "May", "discountMultiplier": 0.0, "event": "None" },
+    { "month": "June", "discountMultiplier": 0.03, "event": "Monsoon Offers" },
+    { "month": "July", "discountMultiplier": 0.0, "event": "None" },
+    { "month": "August", "discountMultiplier": 0.04, "event": "Pre-Festive Deliveries" },
+    { "month": "September", "discountMultiplier": 0.05, "event": "Navratri Special" },
+    { "month": "October", "discountMultiplier": 0.10, "event": "Diwali Bonanza (Free Insurance/Accessories)" },
+    { "month": "November", "discountMultiplier": 0.03, "event": "Post-Festive Slump" },
+    { "month": "December", "discountMultiplier": 0.15, "event": "Year-End Model Clearance" }
+  ],
+  "flights": {
+    "peak_months": ["may", "june", "december"],
+    "cheap_months": ["february", "september", "october", "november"],
+    "generic_multiplier_peak": 1.4,
+    "generic_multiplier_cheap": 0.75
+  }
+}

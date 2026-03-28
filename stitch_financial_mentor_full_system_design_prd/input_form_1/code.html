@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Sovereign Curator - Financial Input</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "inverse-surface": "#2d3133",
+              "primary-fixed": "#d7e2ff",
+              "on-primary-container": "#7796d1",
+              "surface-bright": "#f7f9fb",
+              "error": "#ba1a1a",
+              "surface-container": "#eceef0",
+              "on-surface-variant": "#43474f",
+              "surface-container-high": "#e6e8ea",
+              "background": "#f7f9fb",
+              "surface": "#f7f9fb",
+              "on-primary-fixed": "#001b3f",
+              "on-primary-fixed-variant": "#24467c",
+              "tertiary-container": "#002f58",
+              "secondary-fixed": "#8df7c1",
+              "primary-fixed-dim": "#abc7ff",
+              "outline-variant": "#c4c6d1",
+              "on-secondary-container": "#00714b",
+              "secondary-fixed-dim": "#71dba6",
+              "on-tertiary-container": "#6598d9",
+              "on-primary": "#ffffff",
+              "inverse-primary": "#abc7ff",
+              "error-container": "#ffdad6",
+              "inverse-on-surface": "#eff1f3",
+              "surface-container-lowest": "#ffffff",
+              "secondary-container": "#8af5be",
+              "on-secondary": "#ffffff",
+              "on-tertiary-fixed-variant": "#004882",
+              "primary-container": "#002d62",
+              "primary": "#00193c",
+              "surface-container-highest": "#e0e3e5",
+              "outline": "#747781",
+              "on-surface": "#191c1e",
+              "tertiary": "#001a35",
+              "tertiary-fixed": "#d3e4ff",
+              "on-error": "#ffffff",
+              "surface-variant": "#e0e3e5",
+              "on-error-container": "#93000a",
+              "on-secondary-fixed-variant": "#005235",
+              "surface-container-low": "#f2f4f6",
+              "on-tertiary": "#ffffff",
+              "on-background": "#191c1e",
+              "on-secondary-fixed": "#002113",
+              "secondary": "#006c47",
+              "surface-tint": "#3e5e95",
+              "surface-dim": "#d8dadc",
+              "tertiary-fixed-dim": "#a3c9ff",
+              "on-tertiary-fixed": "#001c38"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .bg-glass {
+        background: rgba(247, 249, 251, 0.8);
+        backdrop-filter: blur(20px);
+      }
+      input:focus {
+        outline: none;
+        box-shadow: none;
+      }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-surface font-body text-on-surface min-h-screen pb-24">
+<!-- TopAppBar -->
+<header class="w-full top-0 sticky bg-[#f7f9fb] dark:bg-[#00193c] z-50">
+<div class="flex items-center justify-between px-6 h-16 w-full max-w-7xl mx-auto">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full overflow-hidden bg-surface-container">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="close-up portrait of a professional man in a tailored suit with a neutral background and soft studio lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD6R1bls4j9lD3ZgMqwaXbkFo-mP1Uu7ibSeeIuou3eNNeVFKc3Vni6tMwj8Ptgf2QFeEhjVbRjElucH-0L9a-xhc38jBDzjAgww4UrWYUZ8_gwGE41i6TwY80WfqbiqUxPA-_8UJG-pCTP4PFmdMKkkUFI2KQO_4WgkRrjMUsDmXOmtT7nesXRrLKa2D015ZWUXv-NxSOGSpqvasdz1iL5J5h3Z_3o7BCBZG-yqVlhILob1cgE-HcLOA_LbEjP4xbxoJk5ulvl76Y"/>
+</div>
+<span class="text-xl font-bold text-[#00193c] dark:text-white font-headline tracking-tight">Sovereign Curator</span>
+</div>
+<button class="text-[#00193c] dark:text-[#f7f9fb] active:scale-95 duration-200 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+</div>
+</header>
+<main class="max-w-4xl mx-auto px-6 pt-8 md:pt-16">
+<!-- Hero Section -->
+<section class="mb-12">
+<h1 class="font-headline font-extrabold text-4xl md:text-5xl text-primary tracking-tight mb-4">
+                Define Your Wealth Path
+            </h1>
+<p class="text-on-surface-variant text-lg max-w-2xl leading-relaxed">
+                Provide your current financial landscape. Our Sovereign Curator engine will analyze your metrics to build a bespoke strategy for your capital.
+            </p>
+</section>
+<!-- Input Form Bento Grid -->
+<div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+<!-- Financial Inputs Card -->
+<div class="md:col-span-8 bg-surface-container-lowest rounded-xl p-8 shadow-[0_4px_32px_rgba(0,0,0,0.02)]">
+<form class="space-y-10">
+<!-- Monthly Income -->
+<div class="group">
+<label class="block font-headline font-bold text-sm text-on-surface-variant uppercase tracking-widest mb-3">
+                            Monthly Cash Inflow
+                        </label>
+<div class="relative flex items-center">
+<span class="absolute left-0 text-2xl font-headline font-bold text-primary opacity-40">$</span>
+<input class="w-full pl-6 py-4 text-3xl font-headline font-bold text-primary bg-transparent border-b-2 border-surface-variant focus:border-primary transition-colors appearance-none" placeholder="0.00" type="number"/>
+</div>
+<p class="mt-2 text-xs text-on-surface-variant/60">Include all net salary, dividends, and rental income.</p>
+</div>
+<!-- Monthly Expenses -->
+<div class="group">
+<label class="block font-headline font-bold text-sm text-on-surface-variant uppercase tracking-widest mb-3">
+                            Monthly Operating Costs
+                        </label>
+<div class="relative flex items-center">
+<span class="absolute left-0 text-2xl font-headline font-bold text-primary opacity-40">$</span>
+<input class="w-full pl-6 py-4 text-3xl font-headline font-bold text-primary bg-transparent border-b-2 border-surface-variant focus:border-primary transition-colors appearance-none" placeholder="0.00" type="number"/>
+</div>
+<p class="mt-2 text-xs text-on-surface-variant/60">Total recurring lifestyle and debt obligations.</p>
+</div>
+<!-- Financial Goal -->
+<div>
+<label class="block font-headline font-bold text-sm text-on-surface-variant uppercase tracking-widest mb-6">
+                            Primary Financial North Star
+                        </label>
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+<button class="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-surface-container hover:border-secondary-container hover:bg-secondary-container/10 transition-all group" type="button">
+<span class="material-symbols-outlined text-3xl mb-2 text-primary group-hover:text-secondary" data-icon="home">home</span>
+<span class="text-sm font-semibold">Real Estate</span>
+</button>
+<button class="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-secondary bg-secondary/5 transition-all group" type="button">
+<span class="material-symbols-outlined text-3xl mb-2 text-secondary" data-icon="directions_car">directions_car</span>
+<span class="text-sm font-semibold">Vehicle</span>
+</button>
+<button class="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-surface-container hover:border-secondary-container hover:bg-secondary-container/10 transition-all group" type="button">
+<span class="material-symbols-outlined text-3xl mb-2 text-primary group-hover:text-secondary" data-icon="flight">flight</span>
+<span class="text-sm font-semibold">Travel</span>
+</button>
+<button class="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-surface-container hover:border-secondary-container hover:bg-secondary-container/10 transition-all group" type="button">
+<span class="material-symbols-outlined text-3xl mb-2 text-primary group-hover:text-secondary" data-icon="school">school</span>
+<span class="text-sm font-semibold">Education</span>
+</button>
+<button class="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-surface-container hover:border-secondary-container hover:bg-secondary-container/10 transition-all group" type="button">
+<span class="material-symbols-outlined text-3xl mb-2 text-primary group-hover:text-secondary" data-icon="monitoring">monitoring</span>
+<span class="text-sm font-semibold">Portfolio</span>
+</button>
+<button class="flex flex-col items-center justify-center p-6 rounded-xl border-2 border-surface-container hover:border-secondary-container hover:bg-secondary-container/10 transition-all group" type="button">
+<span class="material-symbols-outlined text-3xl mb-2 text-primary group-hover:text-secondary" data-icon="add">add</span>
+<span class="text-sm font-semibold">Custom</span>
+</button>
+</div>
+</div>
+</form>
+</div>
+<!-- Contextual Insight Card (Sidebar-style) -->
+<div class="md:col-span-4 space-y-6">
+<div class="bg-primary p-8 rounded-xl text-white relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-32 h-32 bg-secondary opacity-20 blur-3xl -mr-10 -mt-10"></div>
+<div class="relative z-10">
+<span class="material-symbols-outlined text-secondary-container text-4xl mb-4" data-icon="auto_awesome">auto_awesome</span>
+<h3 class="font-headline font-bold text-xl mb-3 leading-tight">Elite Analysis Engine</h3>
+<p class="text-primary-fixed text-sm leading-relaxed opacity-80 mb-6">
+                            Our proprietary Sovereign Mentor model uses global fiscal benchmarks to evaluate your saving ratio and project attainment timelines.
+                        </p>
+<div class="space-y-3">
+<div class="flex items-center gap-3 text-xs font-medium text-secondary-fixed">
+<span class="material-symbols-outlined text-sm" data-icon="check_circle">check_circle</span>
+                                Risk Profile Mapping
+                            </div>
+<div class="flex items-center gap-3 text-xs font-medium text-secondary-fixed">
+<span class="material-symbols-outlined text-sm" data-icon="check_circle">check_circle</span>
+                                Compound Interest Projection
+                            </div>
+</div>
+</div>
+</div>
+<div class="bg-surface-container-low p-6 rounded-xl border border-white/50">
+<h4 class="font-bold text-sm text-primary mb-2">Need assistance?</h4>
+<p class="text-xs text-on-surface-variant leading-relaxed">
+                        Connect your bank accounts securely for automated ingestion of your financial history.
+                    </p>
+<button class="mt-4 text-secondary text-sm font-bold flex items-center gap-1 hover:gap-2 transition-all">
+                        Link Accounts <span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+</div>
+</div>
+<!-- CTA Section -->
+<div class="mt-12 mb-20 flex justify-center">
+<button class="bg-primary text-on-primary font-headline font-bold py-5 px-16 rounded-xl text-lg shadow-[0_20px_40px_rgba(0,25,60,0.15)] hover:bg-primary/90 hover:-translate-y-1 active:scale-95 transition-all duration-300">
+                Analyze Financial Profile
+            </button>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full h-20 flex justify-around items-center px-4 pb-safe bg-[#f7f9fb]/80 dark:bg-[#00193c]/80 backdrop-blur-xl z-50 rounded-t-3xl shadow-[0_-4px_32px_rgba(0,0,0,0.04)]">
+<a class="flex flex-col items-center justify-center bg-[#00193c] dark:bg-[#006c47] text-white rounded-2xl px-6 py-2 active:scale-90 transition-transform duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="edit_note">edit_note</span>
+<span class="font-inter text-[10px] font-medium mt-1">Input</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#191c1e] dark:text-slate-400 px-6 py-2 hover:text-[#006c47] transition-all active:scale-90 duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+<span class="font-inter text-[10px] font-medium mt-1">Dashboard</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#191c1e] dark:text-slate-400 px-6 py-2 hover:text-[#006c47] transition-all active:scale-90 duration-300" href="#">
+<span class="material-symbols-outlined" data-icon="rb_mini">home_mini</span>
+<span class="font-inter text-[10px] font-medium mt-1">Mentor</span>
+</a>
+</nav>
+</body></html>

@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Equity Meridian | Secure Login</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "on-error-container": "#93000a",
+                        "on-error": "#ffffff",
+                        "on-tertiary-container": "#6598d9",
+                        "on-tertiary": "#ffffff",
+                        "on-tertiary-fixed-variant": "#004882",
+                        "on-secondary-fixed": "#002113",
+                        "on-tertiary-fixed": "#001c38",
+                        "surface-container-lowest": "#ffffff",
+                        "secondary-container": "#8af5be",
+                        "on-primary-fixed": "#001b3f",
+                        "secondary-fixed": "#8df7c1",
+                        "primary": "#00193c",
+                        "inverse-on-surface": "#eff1f3",
+                        "surface-variant": "#e0e3e5",
+                        "on-background": "#191c1e",
+                        "error": "#ba1a1a",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed": "#d3e4ff",
+                        "on-surface-variant": "#43474f",
+                        "inverse-surface": "#2d3133",
+                        "on-primary-fixed-variant": "#24467c",
+                        "outline": "#747781",
+                        "on-secondary-fixed-variant": "#005235",
+                        "tertiary": "#001a35",
+                        "surface-dim": "#d8dadc",
+                        "surface-container": "#eceef0",
+                        "primary-fixed-dim": "#abc7ff",
+                        "surface-container-highest": "#e0e3e5",
+                        "on-surface": "#191c1e",
+                        "surface-bright": "#f7f9fb",
+                        "surface-container-high": "#e6e8ea",
+                        "surface": "#f7f9fb",
+                        "tertiary-fixed-dim": "#a3c9ff",
+                        "surface-container-low": "#f2f4f6",
+                        "inverse-primary": "#abc7ff",
+                        "error-container": "#ffdad6",
+                        "tertiary-container": "#002f58",
+                        "surface-tint": "#3e5e95",
+                        "on-primary-container": "#7796d1",
+                        "outline-variant": "#c4c6d1",
+                        "on-secondary-container": "#00714b",
+                        "background": "#f7f9fb",
+                        "primary-fixed": "#d7e2ff",
+                        "secondary": "#006c47",
+                        "secondary-fixed-dim": "#71dba6",
+                        "on-secondary": "#ffffff",
+                        "primary-container": "#002d62"
+                    },
+                    fontFamily: {
+                        "headline": ["Manrope"],
+                        "body": ["Inter"],
+                        "label": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .editorial-spacing {
+            letter-spacing: -0.02em;
+        }
+        .glass-panel {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(20px);
+        }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface min-h-screen flex flex-col">
+<!-- TopAppBar is suppressed for Login according to Shell Visibility Rule -->
+<main class="flex-grow flex flex-col md:flex-row min-h-screen overflow-hidden">
+<!-- Left: Architectural Brand Column -->
+<section class="hidden md:flex relative w-1/2 lg:w-3/5 bg-primary overflow-hidden items-center justify-center">
+<div class="absolute inset-0 z-0">
+<img alt="Architectural Wealth" class="w-full h-full object-cover opacity-60 scale-105" data-alt="Modern minimalist skyscraper glass facade reflecting a blue twilight sky, symbolizing structural integrity and premium wealth management architecture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBJSByjSzpJp0RVrfAOAahJXca9qxx56GMBa0NygEfnkWL7af-gt0wrwjuniV4PkYioh4wmgzjuZY8f-QVb-DOE6domUEl2d8a2coCCd-M-YJX_JAWlPWXDa8VYMIw7HLNyQp3KjlI9qLUIq1u2jQ7Onra8EUBPByEMmDx-RRe4uB-I2jPvdKnj4s1QHc64ISmBq7j24bATwpCK3RfhUN7a9__2IVDKWi6VLsk0Sc-Oe2HZ1ofK0YcTs-ZoFbcoa1ETkfjiQBYR3Qw"/>
+<div class="absolute inset-0 bg-gradient-to-tr from-primary via-primary/40 to-transparent"></div>
+</div>
+<div class="relative z-10 px-16 max-w-2xl">
+<div class="mb-8">
+<span class="text-secondary-fixed font-headline font-extrabold tracking-tighter text-3xl uppercase">Equity Meridian</span>
+</div>
+<h1 class="font-headline text-5xl lg:text-7xl font-bold text-white editorial-spacing leading-tight mb-6">
+                    Architectural <br/>Wealth.
+                </h1>
+<p class="text-primary-fixed-dim text-xl font-light leading-relaxed max-w-md">
+                    Building resilient financial structures with the precision of master architects. Secure your legacy with Sovereign Curation.
+                </p>
+<div class="mt-16 flex items-center gap-4">
+<div class="w-12 h-px bg-secondary"></div>
+<span class="text-secondary font-headline font-semibold tracking-widest uppercase text-xs">Verified Private Banking</span>
+</div>
+</div>
+<!-- Subtle Grid Pattern Overlay -->
+<div class="absolute inset-0 opacity-[0.03] pointer-events-none" style="background-image: radial-gradient(circle, #fff 1px, transparent 1px); background-size: 40px 40px;"></div>
+</section>
+<!-- Right: Login Form Column -->
+<section class="w-full md:w-1/2 lg:w-2/5 flex flex-col items-center justify-center p-8 md:p-16 bg-surface">
+<div class="w-full max-w-md space-y-10">
+<header class="text-left space-y-2">
+<div class="md:hidden mb-8">
+<span class="text-primary font-headline font-extrabold tracking-tighter text-2xl uppercase">Equity Meridian</span>
+</div>
+<h2 class="font-headline text-3xl font-bold text-on-surface editorial-spacing">Access Portfolio</h2>
+<p class="text-on-surface-variant font-body">Sign in to your private wealth dashboard.</p>
+</header>
+<div class="bg-surface-container-lowest p-8 rounded-xl shadow-[0_32px_64px_-15px_rgba(0,25,60,0.05)]">
+<form class="space-y-6">
+<div class="space-y-1">
+<label class="text-xs font-semibold uppercase tracking-wider text-outline" for="email">Email Address</label>
+<div class="relative group">
+<input class="w-full bg-surface-container-low border-none rounded-sm px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary transition-all placeholder:text-outline-variant" id="email" name="email" placeholder="name@institution.com" type="email"/>
+<div class="absolute bottom-0 left-0 w-full h-0.5 bg-surface-variant group-focus-within:bg-primary transition-colors"></div>
+</div>
+</div>
+<div class="space-y-1">
+<div class="flex justify-between items-center">
+<label class="text-xs font-semibold uppercase tracking-wider text-outline" for="password">Password</label>
+<a class="text-xs font-semibold text-primary hover:text-secondary transition-colors" href="#">Forgot Password?</a>
+</div>
+<div class="relative group">
+<input class="w-full bg-surface-container-low border-none rounded-sm px-4 py-3 text-on-surface focus:ring-2 focus:ring-primary transition-all placeholder:text-outline-variant" id="password" name="password" placeholder="••••••••" type="password"/>
+<div class="absolute bottom-0 left-0 w-full h-0.5 bg-surface-variant group-focus-within:bg-primary transition-colors"></div>
+</div>
+</div>
+<div class="flex items-center">
+<input class="w-4 h-4 text-primary border-outline-variant rounded focus:ring-primary" id="remember" name="remember" type="checkbox"/>
+<label class="ml-2 text-sm text-on-surface-variant" for="remember">Remember device for 30 days</label>
+</div>
+<button class="w-full bg-primary hover:bg-primary-container text-on-primary font-headline font-bold py-4 rounded-lg flex items-center justify-center gap-3 transition-all duration-300 active:scale-[0.98]" type="submit">
+<span class="material-symbols-outlined text-xl">lock</span>
+                            Secure Login
+                        </button>
+</form>
+<div class="mt-10 relative">
+<div class="absolute inset-0 flex items-center">
+<div class="w-full border-t border-surface-variant"></div>
+</div>
+<div class="relative flex justify-center text-xs uppercase tracking-widest font-semibold">
+<span class="bg-surface-container-lowest px-4 text-outline">Modern Authentication</span>
+</div>
+</div>
+<div class="mt-8 grid grid-cols-3 gap-4">
+<button class="flex flex-col items-center justify-center gap-2 py-3 border border-outline-variant/20 rounded-lg hover:bg-surface-container-low transition-colors group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary">fingerprint</span>
+<span class="text-[10px] font-bold uppercase tracking-tight text-outline">Biometrics</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-2 py-3 border border-outline-variant/20 rounded-lg hover:bg-surface-container-low transition-colors group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary">face</span>
+<span class="text-[10px] font-bold uppercase tracking-tight text-outline">Face ID</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-2 py-3 border border-outline-variant/20 rounded-lg hover:bg-surface-container-low transition-colors group">
+<span class="material-symbols-outlined text-on-surface-variant group-hover:text-primary">passkey</span>
+<span class="text-[10px] font-bold uppercase tracking-tight text-outline">Passkey</span>
+</button>
+</div>
+</div>
+<footer class="text-center">
+<p class="text-sm text-on-surface-variant">
+                        Don't have an account? 
+                        <a class="text-secondary font-bold hover:underline" href="#">Apply for membership</a>
+</p>
+</footer>
+</div>
+</section>
+</main>
+<!-- Footer from JSON (Strict Mapping) -->
+<footer class="w-full py-8 mt-auto flex flex-col items-center gap-4 text-center px-4 font-inter text-xs tracking-wide text-slate-400 dark:text-slate-600">
+<div class="flex flex-wrap justify-center gap-6 mb-2">
+<a class="hover:text-blue-900 dark:hover:text-blue-100 transition-opacity duration-300" href="#">Privacy Policy</a>
+<a class="hover:text-blue-900 dark:hover:text-blue-100 transition-opacity duration-300" href="#">Security</a>
+<a class="hover:text-blue-900 dark:hover:text-blue-100 transition-opacity duration-300" href="#">Terms of Service</a>
+</div>
+<p>© 2024 Equity Meridian. All rights reserved. Member SIPC/FINRA.</p>
+</footer>
+</body></html>

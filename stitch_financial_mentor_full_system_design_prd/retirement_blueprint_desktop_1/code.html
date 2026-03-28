@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Retirement Blueprint | Equity Meridian</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&amp;family=Inter:wght@400;500;600&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "surface-container-highest": "#e0e3e5",
+              "on-surface": "#191c1e",
+              "surface-container": "#eceef0",
+              "inverse-primary": "#abc7ff",
+              "tertiary-container": "#002f58",
+              "tertiary": "#001a35",
+              "tertiary-fixed": "#d3e4ff",
+              "primary": "#00193c",
+              "surface-container-lowest": "#ffffff",
+              "background": "#f7f9fb",
+              "surface-variant": "#e0e3e5",
+              "surface-dim": "#d8dadc",
+              "on-background": "#191c1e",
+              "on-secondary-container": "#00714b",
+              "on-primary-fixed-variant": "#24467c",
+              "inverse-surface": "#2d3133",
+              "secondary": "#006c47",
+              "outline-variant": "#c4c6d1",
+              "on-secondary": "#ffffff",
+              "outline": "#747781",
+              "on-tertiary-fixed-variant": "#004882",
+              "surface-container-high": "#e6e8ea",
+              "inverse-on-surface": "#eff1f3",
+              "primary-fixed": "#d7e2ff",
+              "surface": "#f7f9fb",
+              "primary-container": "#002d62",
+              "on-primary": "#ffffff",
+              "error": "#ba1a1a",
+              "tertiary-fixed-dim": "#a3c9ff",
+              "surface-container-low": "#f2f4f6",
+              "secondary-container": "#8af5be",
+              "secondary-fixed": "#8df7c1",
+              "on-primary-container": "#7796d1",
+              "on-tertiary-container": "#6598d9",
+              "on-error-container": "#93000a",
+              "secondary-fixed-dim": "#71dba6",
+              "on-tertiary": "#ffffff",
+              "on-secondary-fixed-variant": "#005235",
+              "on-secondary-fixed": "#002113",
+              "on-primary-fixed": "#001b3f",
+              "on-surface-variant": "#43474f",
+              "surface-tint": "#3e5e95",
+              "surface-bright": "#f7f9fb",
+              "on-error": "#ffffff",
+              "error-container": "#ffdad6",
+              "on-tertiary-fixed": "#001c38",
+              "primary-fixed-dim": "#abc7ff"
+            },
+            fontFamily: {
+              "headline": ["Manrope"],
+              "body": ["Inter"],
+              "label": ["Inter"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+      .material-symbols-outlined {
+        font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+      }
+      .glass-nav {
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+      }
+      input[type='range']::-webkit-slider-runnable-track {
+        background: #eceef0;
+        height: 4px;
+        border-radius: 2px;
+      }
+      input[type='range']::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 16px;
+        width: 16px;
+        background: #00193c;
+        border-radius: 50%;
+        margin-top: -6px;
+        cursor: pointer;
+      }
+    </style>
+</head>
+<body class="bg-surface font-body text-on-surface">
+<div class="flex min-h-screen">
+<!-- SideNavBar - JSON Component 8 -->
+<aside class="flex flex-col h-screen sticky top-0 left-0 p-4 gap-2 bg-[#f2f4f6] dark:bg-[#00193c]/90 backdrop-blur-xl h-screen w-64 border-r-0 shadow-[4px_0_24px_rgba(0,0,0,0.02)] z-50">
+<div class="px-4 py-8 mb-4">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-xl bg-primary flex items-center justify-center text-secondary-fixed shadow-inner">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">account_balance</span>
+</div>
+<div>
+<h2 class="font-manrope font-extrabold text-[#00193c] dark:text-white text-lg tracking-tight">Equity Meridian</h2>
+<p class="text-[10px] uppercase tracking-widest text-outline font-bold">The Sovereign Curator</p>
+</div>
+</div>
+</div>
+<nav class="flex-1 space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 text-[#00193c] dark:text-[#8af5be] bg-white dark:bg-[#002d62] rounded-lg shadow-sm font-manrope text-sm font-medium transition-transform duration-200" href="#">
+<span class="material-symbols-outlined" data-icon="payments">payments</span>
+<span>Retirement</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#44474e] dark:text-[#c4c6d1] hover:bg-[#f7f9fb] dark:hover:bg-[#002d62]/50 hover:translate-x-1 transition-transform duration-200 font-manrope text-sm font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span>Tax Planning</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#44474e] dark:text-[#c4c6d1] hover:bg-[#f7f9fb] dark:hover:bg-[#002d62]/50 hover:translate-x-1 transition-transform duration-200 font-manrope text-sm font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="gavel">gavel</span>
+<span>Estate</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#44474e] dark:text-[#c4c6d1] hover:bg-[#f7f9fb] dark:hover:bg-[#002d62]/50 hover:translate-x-1 transition-transform duration-200 font-manrope text-sm font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="school">school</span>
+<span>Education</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#44474e] dark:text-[#c4c6d1] hover:bg-[#f7f9fb] dark:hover:bg-[#002d62]/50 hover:translate-x-1 transition-transform duration-200 font-manrope text-sm font-medium" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span>Settings</span>
+</a>
+</nav>
+<button class="mt-auto mx-2 flex items-center justify-center gap-2 bg-primary text-on-primary py-3 rounded-xl font-headline font-bold text-sm shadow-lg hover:opacity-90 transition-all active:scale-95">
+<span class="material-symbols-outlined text-sm">add</span>
+                New Scenario
+            </button>
+</aside>
+<!-- Main Content Area -->
+<main class="flex-1 p-12 max-w-[1400px]">
+<!-- Header Section -->
+<header class="mb-12">
+<h1 class="font-headline font-extrabold text-5xl text-primary tracking-tighter mb-2">Retirement Blueprint</h1>
+<p class="text-on-surface-variant text-lg">Your architectural roadmap to financial sovereignty.</p>
+</header>
+<div class="grid grid-cols-12 gap-8">
+<!-- Hero Section: Years to Freedom -->
+<div class="col-span-12 lg:col-span-8 bg-surface-container-low rounded-[2rem] p-10 flex items-center justify-between overflow-hidden relative group">
+<div class="z-10 relative">
+<span class="text-secondary font-bold text-sm uppercase tracking-widest mb-4 block">Current Horizon</span>
+<h3 class="font-headline text-4xl font-extrabold text-primary mb-6">Years to Freedom</h3>
+<div class="flex items-end gap-2">
+<span class="text-7xl font-headline font-black text-primary">14</span>
+<span class="text-2xl font-bold text-on-surface-variant mb-3">Years</span>
+</div>
+<p class="mt-6 text-on-surface-variant max-w-xs leading-relaxed">Based on your current trajectory, you will achieve full capital independence by age 52.</p>
+</div>
+<!-- Progress Gauge -->
+<div class="relative w-64 h-64 flex items-center justify-center z-10">
+<svg class="w-full h-full transform -rotate-90">
+<circle class="text-surface-container-highest" cx="128" cy="128" fill="transparent" r="110" stroke="currentColor" stroke-width="24"></circle>
+<circle class="text-secondary" cx="128" cy="128" fill="transparent" r="110" stroke="currentColor" stroke-dasharray="691" stroke-dashoffset="200" stroke-width="24"></circle>
+</svg>
+<div class="absolute inset-0 flex flex-col items-center justify-center text-center">
+<span class="text-3xl font-black text-primary">71%</span>
+<span class="text-[10px] uppercase font-bold text-outline">Accumulated</span>
+</div>
+</div>
+<!-- Decorative background element -->
+<div class="absolute -right-20 -bottom-20 w-96 h-96 bg-secondary-container/20 rounded-full blur-3xl group-hover:bg-secondary-container/30 transition-colors"></div>
+</div>
+<!-- Nest Egg Target Card -->
+<div class="col-span-12 lg:col-span-4 bg-primary-container rounded-[2rem] p-8 text-white flex flex-col justify-between shadow-2xl relative overflow-hidden">
+<div class="z-10">
+<div class="flex justify-between items-start mb-10">
+<div class="bg-secondary px-3 py-1 rounded-full flex items-center gap-1.5 shadow-lg">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="text-[11px] font-bold uppercase tracking-wider">On Track</span>
+</div>
+<span class="material-symbols-outlined text-secondary-container opacity-40">token</span>
+</div>
+<span class="text-on-primary-container font-medium text-sm block mb-1">Target Nest Egg</span>
+<div class="text-4xl font-headline font-extrabold mb-8">$3,250,000</div>
+</div>
+<div class="z-10 border-t border-white/10 pt-6">
+<div class="flex justify-between items-end">
+<div>
+<span class="text-on-primary-container text-xs block mb-1">Current Balance</span>
+<div class="text-xl font-bold">$2,307,500</div>
+</div>
+<div class="text-right">
+<span class="text-secondary-fixed text-sm font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">trending_up</span>
+                                    +12.4%
+                                </span>
+<span class="text-[10px] text-on-primary-container opacity-60">VS LAST YEAR</span>
+</div>
+</div>
+</div>
+<!-- Subtle mesh gradient overlay -->
+<div class="absolute inset-0 bg-gradient-to-br from-primary-container via-primary-container to-[#004882] opacity-50"></div>
+</div>
+<!-- Blueprint Parameters (Sliders) -->
+<div class="col-span-12 lg:col-span-7 bg-surface-container-lowest rounded-[2rem] p-10 shadow-sm">
+<h3 class="font-headline text-2xl font-bold text-primary mb-10">Blueprint Parameters</h3>
+<div class="space-y-10">
+<!-- Slider 1 -->
+<div class="group">
+<div class="flex justify-between mb-4">
+<label class="text-sm font-bold text-on-surface-variant">Current Savings</label>
+<span class="font-headline font-bold text-primary">$450,000</span>
+</div>
+<input class="w-full cursor-pointer accent-primary" max="1000000" min="0" type="range" value="450000"/>
+</div>
+<!-- Slider 2 -->
+<div class="group">
+<div class="flex justify-between mb-4">
+<label class="text-sm font-bold text-on-surface-variant">Monthly Contribution</label>
+<span class="font-headline font-bold text-primary">$4,200</span>
+</div>
+<input class="w-full cursor-pointer accent-primary" max="20000" min="0" type="range" value="4200"/>
+</div>
+<!-- Slider 3 -->
+<div class="group">
+<div class="flex justify-between mb-4">
+<label class="text-sm font-bold text-on-surface-variant">Expected Return</label>
+<span class="font-headline font-bold text-primary">7.5%</span>
+</div>
+<input class="w-full cursor-pointer accent-primary" max="15" min="0" step="0.5" type="range" value="7.5"/>
+</div>
+</div>
+<div class="mt-12 flex items-center justify-between p-6 bg-surface-container-low rounded-2xl">
+<div class="flex items-center gap-4">
+<div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined">bolt</span>
+</div>
+<div>
+<h4 class="font-bold text-sm text-primary">Aggressive Growth</h4>
+<p class="text-xs text-on-surface-variant">Optimized for high-yield assets</p>
+</div>
+</div>
+<!-- Toggle Switch -->
+<button class="w-12 h-6 bg-secondary rounded-full relative transition-colors p-1">
+<div class="absolute right-1 top-1 w-4 h-4 bg-white rounded-full shadow-sm"></div>
+</button>
+</div>
+</div>
+<!-- Insights & Analysis Sidebar -->
+<div class="col-span-12 lg:col-span-5 space-y-8">
+<!-- Inflation Impact Card -->
+<div class="bg-surface-container-lowest p-8 rounded-[2rem] shadow-sm">
+<div class="flex items-center justify-between mb-6">
+<h4 class="font-bold text-primary">Inflation Impact</h4>
+<span class="material-symbols-outlined text-error text-xl">trending_down</span>
+</div>
+<p class="text-sm text-on-surface-variant mb-6 leading-relaxed">Estimated 3% annual inflation reduces your purchasing power by 45% over 20 years.</p>
+<div class="flex items-end gap-1.5 h-12">
+<div class="flex-1 bg-primary h-full rounded-t-sm"></div>
+<div class="flex-1 bg-primary/80 h-4/5 rounded-t-sm"></div>
+<div class="flex-1 bg-primary/60 h-2/3 rounded-t-sm"></div>
+<div class="flex-1 bg-primary/40 h-1/2 rounded-t-sm"></div>
+<div class="flex-1 bg-primary/20 h-1/3 rounded-t-sm"></div>
+</div>
+<div class="flex justify-between mt-2 text-[10px] font-bold text-outline">
+<span>2024</span>
+<span>2044</span>
+</div>
+</div>
+<!-- Power of Compounding -->
+<div class="bg-secondary-container/30 p-8 rounded-[2rem]">
+<div class="flex items-center justify-between mb-4">
+<h4 class="font-bold text-primary">Power of Compounding</h4>
+<div class="w-8 h-8 rounded-full bg-white flex items-center justify-center">
+<span class="material-symbols-outlined text-secondary text-sm" style="font-variation-settings: 'FILL' 1;">auto_awesome</span>
+</div>
+</div>
+<div class="flex items-baseline gap-1 mb-4">
+<span class="text-2xl font-black text-primary">$892k</span>
+<span class="text-xs font-bold text-on-secondary-container">INTEREST EARNED</span>
+</div>
+<div class="w-full bg-white/50 h-3 rounded-full overflow-hidden">
+<div class="bg-secondary h-full w-2/3"></div>
+</div>
+<p class="mt-4 text-xs text-on-secondary-container leading-relaxed">Compound interest accounts for 68% of your total projected nest egg.</p>
+</div>
+</div>
+<!-- Mentor Insight Box -->
+<div class="col-span-12 bg-white rounded-[2rem] p-10 border border-outline-variant/10 shadow-sm flex flex-col md:flex-row gap-8 items-center">
+<div class="w-24 h-24 rounded-full overflow-hidden flex-shrink-0 border-4 border-surface-container">
+<img alt="Professional financial advisor" data-alt="portrait of a mature professional man in a tailored suit with a friendly authoritative expression in a bright modern office" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDKqmtlQsD7ic2jZZ-UtNgrEiR-fPfpmdHprVeFduRcRSdxjJgKMypQ3hT5-cECdHF2Ze5Aiwk3-m56GkpkpYrG1QJq9p1i3zt29zI7YLj0kRCWw3yb-lByqQkxzEk78UjayXFZaeOCnNpysprACwmgadmIlB-PPsGNBi5THX3DfJeabWelaFtHsZAwtF3kazuonFUADWhgHbZCFfbhcUAbx6oECUe9MzZQiQO8x5MG4-z9Qtnpfg8i9IV1-GkwERbVUuHUH_v0Q8A"/>
+</div>
+<div class="flex-1">
+<div class="flex items-center gap-3 mb-2">
+<span class="bg-primary text-on-primary text-[10px] font-bold px-2 py-0.5 rounded uppercase">Mentor Insight</span>
+<span class="text-sm font-bold text-primary">Marcus Sterling, Senior Curator</span>
+</div>
+<p class="text-on-surface text-lg leading-relaxed italic">
+                            "You are currently in the 'Acceleration Phase'. By increasing your monthly contribution by just $400 today, you can pull your 'Freedom Date' forward by 2.4 years. The architectural integrity of your plan is strong, but focus on tax-sheltered vehicles this quarter."
+                        </p>
+</div>
+<button class="bg-primary text-on-primary px-8 py-4 rounded-xl font-headline font-bold whitespace-nowrap hover:shadow-xl transition-all">
+                        Adjust Strategy
+                    </button>
+</div>
+</div>
+<!-- Dashboard Bottom Spacing -->
+<div class="h-16"></div>
+</main>
+</div>
+</body></html>
