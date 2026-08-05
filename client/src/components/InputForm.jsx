@@ -151,7 +151,7 @@ export default function InputForm({ onAnalysisComplete }) {
          setExchangeData({ rate: null, loading: false, error: 'Live rates unavailable for this region.' });
       }
     } catch {
-      setExchangeData({ rate: null, loading: false, error: 'Connection error communicating with Gemini Exchange.' });
+      setExchangeData({ rate: null, loading: false, error: 'Connection error communicating with Groq Exchange.' });
     }
   };
 
@@ -171,15 +171,26 @@ export default function InputForm({ onAnalysisComplete }) {
     setLoading(true);
     setError('');
 
+    // Compute exact goal amount based on selected goal
+    let calculatedGoalAmount;
+    if (formData.goal === 'house' && realEstateConfig.price) {
+      calculatedGoalAmount = parseRawNumber(realEstateConfig.price);
+    } else if (formData.goal === 'car' && vehicleConfig.priceRangeLakhs) {
+      calculatedGoalAmount = vehicleConfig.priceRangeLakhs * 100000;
+    } else if (formData.goalAmount) {
+      calculatedGoalAmount = parseRawNumber(formData.goalAmount);
+    }
+
     try {
       const res = await fetch(`${API}/advice`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          email: formData.email || 'user@architecturalwealth.com',
           income: inc,
           expenses: exp,
           goal: formData.goal,
-          goalAmount: formData.goalAmount ? parseRawNumber(formData.goalAmount) : undefined,
+          goalAmount: calculatedGoalAmount,
           userId: 'default',
         }),
       });
@@ -218,6 +229,22 @@ export default function InputForm({ onAnalysisComplete }) {
         {/* Left Column — Form */}
         <form onSubmit={handleSubmit} className="animate-in">
           <div className="card" style={{ marginBottom: 24 }}>
+            {/* Account Email ID */}
+            <div className="form-group" style={{ marginBottom: 16 }}>
+              <label className="form-label" htmlFor="email">Login Email ID</label>
+              <input
+                id="email"
+                type="email"
+                name="email"
+                className="form-input"
+                placeholder="user@example.com"
+                value={formData.email}
+                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
+                style={{ width: '100%' }}
+              />
+              <span className="form-hint">Used for storing your profile & goals in Supabase.</span>
+            </div>
+
             {/* Income */}
             <div className="form-group">
               <label className="form-label" htmlFor="income">Monthly Salary</label>
@@ -421,7 +448,7 @@ export default function InputForm({ onAnalysisComplete }) {
                       gap: 8
                     }}
                   >
-                    {fetchingMentor ? 'Consulting Gemini...' : '✨ Ask AI Mentor Assessment'}
+                    {fetchingMentor ? 'Consulting Groq AI...' : '✨ Ask AI Mentor Assessment'}
                   </button>
 
                   {vehicleMentorAdvice && (
@@ -463,7 +490,7 @@ export default function InputForm({ onAnalysisComplete }) {
 
                   {(() => {
                     if (exchangeData.error) return <p style={{ fontSize: '0.75rem', color: 'var(--error)' }}>{exchangeData.error}</p>;
-                    if (!exchangeData.rate) return <p style={{ fontSize: '0.75rem', color: 'var(--outline)' }}>Type a country and check live rate via Gemini.</p>;
+                    if (!exchangeData.rate) return <p style={{ fontSize: '0.75rem', color: 'var(--outline)' }}>Type a country and check live rate via Groq AI.</p>;
                     
                     return (
                       <div className="animate-in" style={{ padding: 12, borderRadius: 6, background: '#fff', border: '1px solid var(--surface-container)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>

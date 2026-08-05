@@ -1,6 +1,6 @@
 /**
  * Route: /api/advice
- * Purpose: Run Logic Engine + AI Engine for full mentorship advice
+ * Purpose: Run Logic Engine + Groq AI Engine for full mentorship advice & save to Supabase
  */
 
 const express = require('express');
@@ -9,10 +9,11 @@ const logicEngine = require('../engines/logicEngine');
 const aiEngine = require('../engines/aiEngine');
 const { buildAdviceResponse, buildErrorResponse } = require('../services/responseBuilder');
 const contextManager = require('../services/contextManager');
+const supabaseService = require('../services/supabaseService');
 
 router.post('/', async (req, res) => {
   try {
-    const { income, expenses, goal, goalAmount, userId } = req.body;
+    const { email, income, expenses, goal, goalAmount, userId } = req.body;
 
     // Validate input
     if (!income || !expenses) {
@@ -35,10 +36,25 @@ router.post('/', async (req, res) => {
     contextManager.saveAnalysis(uid, logicOutput);
     const userContext = contextManager.getUserContext(uid);
 
-    // Step 2: AI Engine
+    // Step 2: Groq AI Engine
     const aiAdvice = await aiEngine.generateAdvice(logicOutput, userContext);
 
-    // Step 3: Response Builder
+    // Step 3: Save to Supabase (Async)
+    const userEmail = email || 'user@architecturalwealth.com';
+    supabaseService.saveAnalysisRecord({
+      userEmail,
+      income: Number(income),
+      expenses: Number(expenses),
+      savings: logicOutput.savings,
+      savingsPercent: logicOutput.expenseAnalysis.savingsPercent,
+      financialScore: logicOutput.score,
+      goal: goal || 'other',
+      goalAmount: logicOutput.goalTimeline ? logicOutput.goalTimeline.targetAmount : undefined,
+      sipRecommendation: logicOutput.sip,
+      aiAdvice
+    }).catch(err => console.error('Background Supabase save error:', err.message));
+
+    // Step 4: Response Builder
     res.json(buildAdviceResponse(logicOutput, aiAdvice));
   } catch (error) {
     console.error('Advice Error:', error);

@@ -1,8 +1,8 @@
 /**
- * AI Engine — LLM Mentor Personality (Gemini version)
+ * AI Engine — LLM Mentor Personality (Groq AI Version)
  * 
- * Wraps Gemini API with a financial mentor system prompt.
- * Converts numbers into human, actionable advice.
+ * Powered by Groq AI (Llama 3.3 70B Versatile).
+ * Converts numbers into warm, human, actionable advice.
  */
 
 const SYSTEM_PROMPT = `You are a warm, knowledgeable financial mentor for Indian users. Your name is "Sovereign Mentor".
@@ -23,42 +23,9 @@ RULES:
 
 CURRENCY: Always use ₹ (Indian Rupees)`;
 
-async function callGemini(systemPrompt, userPrompt, enableSearch = false) {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey || apiKey === 'your-api-key-here') {
-    throw new Error("Missing Gemini API Key");
-  }
-
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
-  
-  const payload = {
-    system_instruction: {
-      parts: { text: systemPrompt }
-    },
-    contents: [
-      {
-        role: "user",
-        parts: [{ text: userPrompt }]
-      }
-    ]
-  };
-
-  if (enableSearch) {
-    payload.tools = [{ googleSearch: {} }];
-  }
-
-  const response = await fetch(url, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload)
-  });
-
-  const data = await response.json();
-  if (data.error) throw new Error(data.error.message);
-  
-  return data.candidates[0].content.parts[0].text;
-}
-
+/**
+ * Call Groq API via fetch
+ */
 async function callGroq(systemPrompt, userPromptOrMessage, conversationHistory = [], userContext = {}) {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey || apiKey === 'your-groq-api-key-here') {
@@ -107,56 +74,32 @@ async function callGroq(systemPrompt, userPromptOrMessage, conversationHistory =
 }
 
 /**
- * Generate financial advice based on logic engine output (Uses Groq AI)
+ * Generate financial advice using Groq AI
  */
 async function generateAdvice(logicOutput, userContext = {}) {
   const userPrompt = buildAdvicePrompt(logicOutput, userContext);
-
-  if (process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== 'your-groq-api-key-here') {
-    try {
-      return await callGroq(SYSTEM_PROMPT, userPrompt, [], userContext);
-    } catch (groqError) {
-      console.error('Groq AI Advice Error:', groqError.message, '- falling back to Gemini');
-    }
-  }
-
   try {
-    return await callGemini(SYSTEM_PROMPT, userPrompt);
+    return await callGroq(SYSTEM_PROMPT, userPrompt, [], userContext);
   } catch (error) {
-    console.error('Gemini AI Engine Error:', error.message);
+    console.error('Groq AI Engine Error:', error.message);
     return getFallbackAdvice(logicOutput);
   }
 }
 
 /**
- * Chat with the mentor (uses Groq if available, falls back to Gemini)
+ * Chat with the mentor using Groq AI
  */
 async function chat(message, conversationHistory = [], userContext = {}) {
-  if (process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== 'your-groq-api-key-here') {
-    try {
-      return await callGroq(SYSTEM_PROMPT, message, conversationHistory, userContext);
-    } catch (groqError) {
-      console.error('Groq AI Chat Error:', groqError.message, '- falling back to Gemini');
-    }
-  }
-
-  const contextPrompt = userContext.income
-    ? `\n\nUSER CONTEXT: Income ₹${userContext.income}, Expenses ₹${userContext.expenses}, Savings ₹${userContext.savings}, Financial Score ${userContext.score}/10.`
-    : '';
-
-  let historyText = conversationHistory.slice(-5).map(m => `${m.role.toUpperCase()}: ${m.content}`).join('\n');
-  const userPrompt = `${contextPrompt}\n\nRecent History:\n${historyText}\n\nUser: ${message}`;
-
   try {
-    return await callGemini(SYSTEM_PROMPT, userPrompt);
+    return await callGroq(SYSTEM_PROMPT, message, conversationHistory, userContext);
   } catch (error) {
-    console.error('Gemini AI Chat Error:', error.message);
+    console.error('Groq AI Chat Error:', error.message);
     return getFallbackChatResponse(message);
   }
 }
 
 /**
- * NEW: Vehicle Mentor
+ * Vehicle Mentor powered by Groq AI
  */
 async function judgeVehicleAffordability(income, expenses, vehiclePrice, emi, downPayment) {
   const system = `You are a strict but helpful financial truth-teller focusing on auto loans.`;
@@ -169,44 +112,35 @@ Calculated EMI: ₹${emi}
 
 Act as an AI mentor. Judge this purchase. Is it manageable? Is the EMI too high for their surplus? Tell them the harsh truth but keep it encouraging. Max 2 paragraphs. Format nicely.`;
 
-  if (process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== 'your-groq-api-key-here') {
-    try {
-      return await callGroq(system, prompt);
-    } catch (groqErr) {
-      console.error('Groq Vehicle Mentor Error:', groqErr.message);
-    }
-  }
-
   try {
-    return await callGemini(system, prompt);
-  } catch(error) {
-    console.error('Vehicle Mentor Error:', error.message);
+    return await callGroq(system, prompt);
+  } catch (error) {
+    console.error('Groq Vehicle Mentor Error:', error.message);
     return "Fallback: Could not connect to AI Mentor. Please ensure your EMI is not exceeding 50% of your disposable income.";
   }
 }
 
 /**
- * NEW: Exchange Rate Fetcher
+ * Exchange Rate Fetcher using Groq AI
  */
 async function getExchangeRate(country) {
-  const system = `You have access to Google Search to check live real-time currency statuses. Search for "1 ${country} currency to INR current exchange rate". Reply ONLY with the exact floating point number representing the current LIVE value of 1 primary unit of ${country}'s currency in Indian Rupees (INR). Do not include words, currency symbols (like ₹ or $), or commas. Ensure accuracy to the current date. Example: 94.86`;
-  const prompt = `What is the exact live exchange rate right now for 1 primary currency unit of ${country} in INR? Provide only the number.`;
+  const system = `You are a financial currency assistant. Provide the estimated or standard current exchange rate of 1 primary unit of ${country}'s currency in Indian Rupees (INR). Reply ONLY with the exact floating point number (e.g. 83.50 or 105.20 or 94.86). Do not include text, currency symbols, or extra characters.`;
+  const prompt = `What is the current exchange rate for 1 primary currency unit of ${country} in INR? Provide only the number.`;
 
   try {
-    const rawNum = await callGemini(system, prompt, true);
-    // Use regex to extract just the number in case it returned text
+    const rawNum = await callGroq(system, prompt);
     const match = rawNum.match(/[\d.]+/);
     if (!match) return null;
     const parsed = parseFloat(match[0]);
     return isNaN(parsed) ? null : parsed;
-  } catch(error) {
-    console.error('Exchange Rate Error:', error.message);
+  } catch (error) {
+    console.error('Groq Exchange Rate Error:', error.message);
     return null;
   }
 }
 
 /**
- * NEW: Future Goal Planner Mentor
+ * Future Goal Planner Mentor using Groq AI
  */
 async function generateGoalAdvice(goalCategory, plannerData) {
   const system = `You are a strategic financial planner. The user wants to buy/achieve a ${goalCategory}.
@@ -221,24 +155,16 @@ Provide a concise, encouraging verdict.
 
   const prompt = `Give me your strategic recommendation for my ${goalCategory} goal.`;
 
-  if (process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== 'your-groq-api-key-here') {
-    try {
-      return await callGroq(system, prompt);
-    } catch (groqErr) {
-      console.error('Groq Goal Advice Error:', groqErr.message);
-    }
-  }
-
   try {
-    return await callGemini(system, prompt);
-  } catch(error) {
-    console.error('Goal Advice Error:', error.message);
+    return await callGroq(system, prompt);
+  } catch (error) {
+    console.error('Groq Goal Advice Error:', error.message);
     return "Fallback: Could not connect to AI Mentor. Please review the calculated savings plan manually.";
   }
 }
 
 /**
- * Build a detailed prompt for advice generation
+ * Build prompt for advice generation
  */
 function buildAdvicePrompt(logicOutput, userContext) {
   const { income, expenses, savings, score, sip, goal, goalTimeline, expenseAnalysis } = logicOutput;
@@ -261,9 +187,6 @@ RECOMMENDED: Minimum ₹${sip.toLocaleString('en-IN')}/month in SIPs.
 Give practical, actionable advice for this specific situation. Address their goal directly.`;
 }
 
-/**
- * Fallbacks
- */
 function getFallbackAdvice(logicOutput) {
   const { savings, sip, expenseAnalysis } = logicOutput;
   return `AI currently offline. Please review your savings rate (${expenseAnalysis.savingsPercent}%). We recommend SIP investments of at least ₹${sip.toLocaleString('en-IN')}.`;

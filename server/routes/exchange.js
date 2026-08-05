@@ -9,7 +9,6 @@ router.post('/', async (req, res) => {
 
     const rate = await aiEngine.getExchangeRate(country);
     
-    // Fallback if Gemini failed
     if (rate === null) {
       return res.status(500).json({ success: false, error: 'Could not fetch live exchange rate' });
     }

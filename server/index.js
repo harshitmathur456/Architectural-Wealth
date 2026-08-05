@@ -1,7 +1,7 @@
 /**
  * Financial Mentor — Express Server Entry Point
  * 
- * Hybrid AI System: Logic Engine + LLM Mentor
+ * Hybrid AI System: Logic Engine + Groq LLM Mentor + Supabase DB
  */
 
 require('dotenv').config();
@@ -17,20 +17,22 @@ app.use(express.json());
 
 // Routes (Microservice-style)
 app.use('/api/analyze', require('./routes/analyze'));  // Logic Engine only
-app.use('/api/advice', require('./routes/advice'));    // Logic + AI Engine
-app.use('/api/chat', require('./routes/chat'));        // Chat with Mentor
-app.use('/api/exchange', require('./routes/exchange'));// Gemini Dynamic Exchange
-app.use('/api/vehicle-mentor', require('./routes/vehicleMentor')); // Gemini Vehicle Affordability
-app.use('/api/goal-planner', require('./routes/goalPlanner')); // AI Goal Planner
+app.use('/api/advice', require('./routes/advice'));    // Logic + Groq AI Engine + Supabase
+app.use('/api/chat', require('./routes/chat'));        // Chat with Mentor (Groq AI)
+app.use('/api/exchange', require('./routes/exchange'));// Groq Dynamic Exchange
+app.use('/api/vehicle-mentor', require('./routes/vehicleMentor')); // Groq Vehicle Affordability
+app.use('/api/goal-planner', require('./routes/goalPlanner')); // Groq Goal Planner
 
 // Health check
 app.get('/api/health', (req, res) => {
-  const hasAI = process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'your-api-key-here';
+  const hasGroq = process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== 'your-groq-api-key-here';
+  const hasSupabase = Boolean(process.env.SUPABASE_KEY);
   res.json({
     status: 'ok',
     engines: {
       logic: true,
-      ai: hasAI
+      groq: hasGroq,
+      supabase: hasSupabase
     },
     timestamp: new Date().toISOString()
   });
@@ -38,13 +40,15 @@ app.get('/api/health', (req, res) => {
 
 // Start server
 app.listen(PORT, () => {
-  const hasAI = process.env.OPENAI_API_KEY && process.env.OPENAI_API_KEY !== 'your-api-key-here';
-  console.log(`\n🚀 Financial Mentor Server running on http://localhost:${PORT}`);
+  const hasGroq = process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== 'your-groq-api-key-here';
+  const hasSupabase = Boolean(process.env.SUPABASE_KEY);
+  console.log(`\n🚀 Sovereign Curator Server running on http://localhost:${PORT}`);
   console.log(`📊 Logic Engine: ✅ Active`);
-  console.log(`🤖 AI Engine: ${hasAI ? '✅ Active (OpenAI)' : '⚠️  Fallback mode (no API key)'}`);
+  console.log(`🤖 AI Engine: ${hasGroq ? '✅ Active (Groq AI)' : '⚠️  Fallback mode'}`);
+  console.log(`🗄️ Database: ${hasSupabase ? '✅ Active (Supabase)' : '⚠️  Not configured'}`);
   console.log(`\nEndpoints:`);
   console.log(`  POST /api/analyze  → Financial calculations`);
-  console.log(`  POST /api/advice   → Full mentorship advice`);
-  console.log(`  POST /api/chat     → Chat with mentor`);
+  console.log(`  POST /api/advice   → Full mentorship advice & Supabase storage`);
+  console.log(`  POST /api/chat     → Chat with Groq AI mentor`);
   console.log(`  GET  /api/health   → Server status\n`);
 });
