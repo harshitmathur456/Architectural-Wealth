@@ -22,34 +22,37 @@ router.post('/', async (req, res) => {
     
     if (category === 'smartphone' || category === 'electronics' || category === 'cars') {
       const budget = Number(payload.budget) || 0;
-      const urgency = Number(payload.urgencyMonths) || 12; // Planning horizon
+      const urgency = Math.min(12, Math.max(1, Number(payload.urgencyMonths) || 12));
       
       const trends = seasonalTrends[category] || [];
       if (trends.length > 0) {
-        // Find maximum discount within the user's urgency window (from next month to urgency)
-        let maxDiscount = -1;
-        let bestMonthRow = null;
-        let monthsToWait = 0;
+        let bestCandidate = null;
+        let bestScore = -999;
 
-        for (let i = 1; i <= urgency; i++) {
+        // Evaluate candidate months starting from current month up to urgency window
+        for (let i = 0; i < urgency; i++) {
           const index = (currentMonthNum + i) % 12;
           const monthData = trends[index];
-          if (monthData.discountMultiplier > maxDiscount) {
-            maxDiscount = monthData.discountMultiplier;
-            bestMonthRow = monthData;
-            monthsToWait = i;
+          const discount = monthData.discountMultiplier;
+
+          // Score formula balancing discount percentage and urgency proximity
+          const score = (discount * 100) - (i * 0.8);
+
+          if (score > bestScore) {
+            bestScore = score;
+            bestCandidate = { ...monthData, monthsToWait: i };
           }
         }
 
-        if (bestMonthRow) {
-          result.bestMonth = bestMonthRow.month;
-          result.expectedSavings = budget * bestMonthRow.discountMultiplier;
-          result.insight = `Highest historical discount (${(bestMonthRow.discountMultiplier * 100).toFixed(0)}%) during ${bestMonthRow.event}`;
+        if (bestCandidate) {
+          result.bestMonth = bestCandidate.month;
+          result.expectedSavings = Math.round(budget * bestCandidate.discountMultiplier);
+          result.insight = `Highest savings (${(bestCandidate.discountMultiplier * 100).toFixed(0)}% off) during ${bestCandidate.event}`;
           
-          if (monthsToWait > 0) {
-             result.monthlySavingsRequired = Math.ceil((budget - result.expectedSavings) / monthsToWait);
+          if (bestCandidate.monthsToWait > 0) {
+             result.monthlySavingsRequired = Math.ceil((budget - result.expectedSavings) / bestCandidate.monthsToWait);
           } else {
-             result.monthlySavingsRequired = budget - result.expectedSavings; 
+             result.monthlySavingsRequired = Math.max(0, budget - result.expectedSavings); 
           }
         }
       }
@@ -70,29 +73,29 @@ router.post('/', async (req, res) => {
       
       result.bestMonth = flightData.cheap_months?.[0] || 'September';
       if (isPeak && payload.flexibleDate) {
-         result.expectedSavings = simulatedPrice - (budget * flightData.generic_multiplier_cheap);
+         result.expectedSavings = Math.round(simulatedPrice - (budget * flightData.generic_multiplier_cheap));
          result.insight = `Traveling in ${travelMonthStr} is PEAK season. Shifting to ${result.bestMonth} saves ~${((1 - (flightData.generic_multiplier_cheap/modifier)) * 100).toFixed(0)}%`;
       } else {
          result.insight = isCheap ? `Excellent timing. ${travelMonthStr} is typically off-peak.` : `Standard pricing expected for ${travelMonthStr}.`;
          result.expectedSavings = 0;
       }
       
-      result.simulatedFlightPrice = simulatedPrice;
+      result.simulatedFlightPrice = Math.round(simulatedPrice);
       const monthsAway = Math.max(1, (travelDate.getFullYear() - date.getFullYear()) * 12 + travelDate.getMonth() - date.getMonth());
       result.monthlySavingsRequired = Math.ceil(simulatedPrice / monthsAway);
     } else if (category === 'further_studies') {
       const tuition = Number(payload.budget) || 0;
-      const scholarshipActive = payload.scholarship; // boolean
+      const scholarshipActive = payload.scholarship;
       
       result.bestMonth = 'August (Enrollment)';
-      result.expectedSavings = scholarshipActive ? tuition * 0.3 : 0; // Simulate avergae 30% scholarship
+      result.expectedSavings = Math.round(scholarshipActive ? tuition * 0.3 : 0);
       result.insight = scholarshipActive ? 'Assuming a 30% standard scholarship offset based on your profile.' : 'Full tuition. Explore scholarship options to reduce burden.';
       
       const monthsAway = Number(payload.urgencyMonths) || 12;
       result.monthlySavingsRequired = Math.ceil((tuition - result.expectedSavings) / Math.max(1, monthsAway));
     }
 
-    // Pass data to Gemini for natural language explanation
+    // Pass data to Groq AI for strategic advice explanation
     const aiExplanation = await aiEngine.generateGoalAdvice(category, result);
     result.aiExplanation = aiExplanation;
 
