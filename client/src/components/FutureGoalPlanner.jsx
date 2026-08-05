@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { formatWithCommas, parseRawNumber } from '../utils/formatters';
 
 const API = 'http://localhost:5000/api';
 
@@ -22,6 +23,11 @@ export default function FutureGoalPlanner({ onClose }) {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleFormattedFieldChange = (field, value) => {
+    const formatted = formatWithCommas(value);
+    setFormData(prev => ({ ...prev, [field]: formatted }));
+  };
+
   const handleFormSubmit = async () => {
     // Only support the advanced ones for now
     if (['real_estate', 'custom'].includes(activeCategory)) {
@@ -32,12 +38,17 @@ export default function FutureGoalPlanner({ onClose }) {
     setLoading(true);
     setResult(null);
     try {
+      const payloadClean = { ...formData };
+      if (payloadClean.budget) {
+        payloadClean.budget = parseRawNumber(payloadClean.budget);
+      }
+
       const res = await fetch(`${API}/goal-planner`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           category: activeCategory,
-          payload: formData
+          payload: payloadClean
         })
       });
       const data = await res.json();
@@ -65,7 +76,7 @@ export default function FutureGoalPlanner({ onClose }) {
           </div>
           <div className="form-group">
             <label>Budget Range (₹)</label>
-            <input type="number" className="form-input" placeholder="e.g. 120000" onChange={e => handleFieldChange('budget', e.target.value)} />
+            <input type="text" inputMode="numeric" className="form-input" placeholder="e.g. 1,20,000" value={formData.budget || ''} onChange={e => handleFormattedFieldChange('budget', e.target.value)} />
           </div>
           <div className="form-group" style={{ gridColumn: '1 / -1' }}>
             <label>Purchase Urgency (Months away)</label>
@@ -88,7 +99,7 @@ export default function FutureGoalPlanner({ onClose }) {
           </div>
           <div className="form-group">
             <label>Expected Price (₹)</label>
-            <input type="number" className="form-input" placeholder="e.g. 2400000" onChange={e => handleFieldChange('budget', e.target.value)} />
+            <input type="text" inputMode="numeric" className="form-input" placeholder="e.g. 24,00,000" value={formData.budget || ''} onChange={e => handleFormattedFieldChange('budget', e.target.value)} />
           </div>
         </div>
       );
@@ -103,7 +114,7 @@ export default function FutureGoalPlanner({ onClose }) {
           </div>
           <div className="form-group">
             <label>Budget / Expected Price (₹)</label>
-            <input type="number" className="form-input" placeholder="e.g. 80000" onChange={e => handleFieldChange('budget', e.target.value)} />
+            <input type="text" inputMode="numeric" className="form-input" placeholder="e.g. 80,000" value={formData.budget || ''} onChange={e => handleFormattedFieldChange('budget', e.target.value)} />
           </div>
           <div className="form-group">
             <label>Expected Travel Date</label>
@@ -122,7 +133,7 @@ export default function FutureGoalPlanner({ onClose }) {
         <div className="planner-grid animate-in">
           <div className="form-group">
             <label>Program Tuition (₹)</label>
-            <input type="number" className="form-input" placeholder="e.g. 1500000" onChange={e => handleFieldChange('budget', e.target.value)} />
+            <input type="text" inputMode="numeric" className="form-input" placeholder="e.g. 15,00,000" value={formData.budget || ''} onChange={e => handleFormattedFieldChange('budget', e.target.value)} />
           </div>
           <div className="form-group">
             <label>Months until Enrollment</label>

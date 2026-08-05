@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import FutureGoalPlanner from './FutureGoalPlanner';
+import { formatWithCommas, parseRawNumber } from '../utils/formatters';
 
 const API = 'http://localhost:5000/api';
 
@@ -11,8 +12,6 @@ const GOALS = [
   { value: 'business', label: 'Portfolio', icon: '📊' },
   { value: 'other', label: 'Custom', icon: '➕' },
 ];
-
-// Exchange rates now loaded dynamically via Gemini API
 
 export default function InputForm({ onAnalysisComplete }) {
   const [showPlanner, setShowPlanner] = useState(false);
@@ -34,7 +33,7 @@ export default function InputForm({ onAnalysisComplete }) {
   // Vehicle State
   const [vehicleConfig, setVehicleConfig] = useState({
     priceRangeLakhs: 5,
-    downPayment: 0
+    downPayment: ''
   });
   const [vehicleMentorAdvice, setVehicleMentorAdvice] = useState('');
   const [fetchingMentor, setFetchingMentor] = useState(false);
@@ -48,20 +47,35 @@ export default function InputForm({ onAnalysisComplete }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleChange = (e) => {
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  const handleFormattedChange = (e) => {
+    const { name, value } = e.target;
+    const formatted = formatWithCommas(value);
+    setFormData(prev => ({ ...prev, [name]: formatted }));
     setError('');
+  };
+
+  const handleRealEstatePriceChange = (e) => {
+    const formatted = formatWithCommas(e.target.value);
+    setRealEstateConfig(prev => ({ ...prev, price: formatted }));
+  };
+
+  const handleVehicleDownPaymentChange = (e) => {
+    const formatted = formatWithCommas(e.target.value);
+    setVehicleConfig(prev => ({ ...prev, downPayment: formatted }));
   };
 
   // Helper calculations for Real Estate
   const getAffordability = () => {
-    if (!realEstateConfig.price || !formData.income || !formData.expenses) return null;
+    const inc = parseRawNumber(formData.income);
+    const exp = parseRawNumber(formData.expenses);
+    const prc = parseRawNumber(realEstateConfig.price);
+    if (!prc || !inc || !exp) return null;
     
     // Monthly disposable income
-    const surplus = Number(formData.income) - Number(formData.expenses);
+    const surplus = inc - exp;
     if (surplus <= 0) return { emi: 0, affordable: false, message: 'No surplus capital available.' };
 
-    const P = Number(realEstateConfig.price);
+    const P = prc;
     // Assuming 20% downpayment, 80% loan
     const L = P * 0.8;
     const r = (Number(realEstateConfig.interestRate) / 12) / 100;
@@ -69,7 +83,7 @@ export default function InputForm({ onAnalysisComplete }) {
 
     const emi = Math.round((L * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1));
     
-    // Rule of thumb: EMI should not exceed 40% of surplus
+    // Rule of thumb: EMI should not exceed 50% of surplus
     const affordable = emi <= (surplus * 0.5);
     
     return { 
@@ -81,7 +95,8 @@ export default function InputForm({ onAnalysisComplete }) {
 
   // Helper calculations for Vehicle
   const getVehicleAffordability = () => {
-    const P = (vehicleConfig.priceRangeLakhs * 100000) - Number(vehicleConfig.downPayment);
+    const dp = parseRawNumber(vehicleConfig.downPayment);
+    const P = (vehicleConfig.priceRangeLakhs * 100000) - dp;
     if (P <= 0) return { emi: 0 };
     const r = (8.5 / 12) / 100; // Standard 8.5% auto loan
     const n = 5 * 12; // 5 year typical tenure
@@ -90,7 +105,9 @@ export default function InputForm({ onAnalysisComplete }) {
   };
 
   const handleAskVehicleMentor = async () => {
-    if (!formData.income || !formData.expenses) {
+    const inc = parseRawNumber(formData.income);
+    const exp = parseRawNumber(formData.expenses);
+    if (!inc || !exp) {
       setVehicleMentorAdvice('Please fill salary and expenditure first.');
       return;
     }
@@ -102,10 +119,10 @@ export default function InputForm({ onAnalysisComplete }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          income: formData.income,
-          expenses: formData.expenses,
+          income: inc,
+          expenses: exp,
           price: vehicleConfig.priceRangeLakhs * 100000,
-          downPayment: vehicleConfig.downPayment,
+          downPayment: parseRawNumber(vehicleConfig.downPayment),
           emi
         })
       });
@@ -140,11 +157,14 @@ export default function InputForm({ onAnalysisComplete }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!formData.income || !formData.expenses) {
+    const inc = parseRawNumber(formData.income);
+    const exp = parseRawNumber(formData.expenses);
+
+    if (!inc || !exp) {
       setError('Please provide your income and expenses to proceed.');
       return;
     }
-    if (Number(formData.income) <= 0) {
+    if (inc <= 0) {
       setError('Income must be greater than zero.');
       return;
     }
@@ -156,10 +176,10 @@ export default function InputForm({ onAnalysisComplete }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          income: Number(formData.income),
-          expenses: Number(formData.expenses),
+          income: inc,
+          expenses: exp,
           goal: formData.goal,
-          goalAmount: formData.goalAmount ? Number(formData.goalAmount) : undefined,
+          goalAmount: formData.goalAmount ? parseRawNumber(formData.goalAmount) : undefined,
           userId: 'default',
         }),
       });
@@ -186,12 +206,11 @@ export default function InputForm({ onAnalysisComplete }) {
           </p>
         </div>
         <button 
-          className="btn" 
-          style={{ background: 'var(--primary-container)', color: 'var(--on-primary-container)', borderRadius: 30, display: 'flex', alignItems: 'center', gap: 8, padding: '10px 20px' }}
+          className="btn-planner" 
           onClick={() => setShowPlanner(true)}
         >
-          <span className="material-symbols-outlined" style={{ fontSize: 20 }}>calendar_month</span>
-          Open Goal Planner
+          <span className="material-symbols-outlined" style={{ fontSize: 20, color: '#80d8ff' }}>calendar_month</span>
+          <span style={{ color: '#ffffff', fontWeight: 700 }}>Open Goal Planner</span>
         </button>
       </div>
 
@@ -206,13 +225,13 @@ export default function InputForm({ onAnalysisComplete }) {
                 <span className="prefix">₹</span>
                 <input
                   id="income"
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   name="income"
                   className="form-input"
                   placeholder="0.00"
                   value={formData.income}
-                  onChange={handleChange}
-                  min="0"
+                  onChange={handleFormattedChange}
                   style={{ width: '100%' }}
                 />
               </div>
@@ -226,13 +245,13 @@ export default function InputForm({ onAnalysisComplete }) {
                 <span className="prefix">₹</span>
                 <input
                   id="expenses"
-                  type="number"
+                  type="text"
+                  inputMode="numeric"
                   name="expenses"
                   className="form-input"
                   placeholder="0.00"
                   value={formData.expenses}
-                  onChange={handleChange}
-                  min="0"
+                  onChange={handleFormattedChange}
                   style={{ width: '100%' }}
                 />
               </div>
@@ -282,11 +301,12 @@ export default function InputForm({ onAnalysisComplete }) {
                       <label style={{ fontSize: '0.7rem', color: 'var(--outline)', fontWeight: 600 }}>Price (₹)</label>
                       <input 
                         className="form-input" 
-                        type="number" 
-                        placeholder="e.g. 8000000" 
+                        type="text"
+                        inputMode="numeric" 
+                        placeholder="e.g. 80,00,000" 
                         style={{ fontSize: '0.9rem', padding: '8px 4px', width: '100%' }}
                         value={realEstateConfig.price}
-                        onChange={(e) => setRealEstateConfig(p => ({ ...p, price: e.target.value }))}
+                        onChange={handleRealEstatePriceChange}
                       />
                     </div>
                   </div>
@@ -324,7 +344,7 @@ export default function InputForm({ onAnalysisComplete }) {
                           Estimated Monthly EMI (80% Loan)
                         </div>
                         <div style={{ fontSize: '1.4rem', fontFamily: 'Manrope', fontWeight: 800, color: afford.affordable ? 'var(--secondary)' : 'var(--error)' }}>
-                          ₹{afford.emi.toLocaleString()}
+                          ₹{afford.emi.toLocaleString('en-IN')}
                         </div>
                         <div style={{ fontSize: '0.75rem', color: afford.affordable ? 'var(--secondary)' : 'var(--error)' }}>
                           {afford.affordable ? '✓ ' : '⚠ '}{afford.message}
@@ -363,11 +383,12 @@ export default function InputForm({ onAnalysisComplete }) {
                     <label style={{ fontSize: '0.7rem', color: 'var(--outline)', fontWeight: 600 }}>Down Payment Available (₹)</label>
                     <input 
                       className="form-input" 
-                      type="number" 
-                      placeholder="e.g. 200000" 
+                      type="text" 
+                      inputMode="numeric"
+                      placeholder="e.g. 2,00,000" 
                       style={{ fontSize: '0.9rem', padding: '8px 4px', width: '100%' }}
                       value={vehicleConfig.downPayment}
-                      onChange={(e) => setVehicleConfig(p => ({ ...p, downPayment: e.target.value }))}
+                      onChange={handleVehicleDownPaymentChange}
                     />
                   </div>
 

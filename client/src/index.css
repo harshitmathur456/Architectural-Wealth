@@ -24,6 +24,7 @@
   --on-surface: #191c1e;
   --on-surface-variant: #43474f;
   --on-primary: #ffffff;
+  --on-primary-container: #ffffff;
 
   --error: #ba1a1a;
   --outline: #747781;
@@ -43,6 +44,28 @@
 
   --navbar-height: 56px;
   --bottombar-height: 72px;
+}
+
+.btn-planner {
+  background: linear-gradient(135deg, #002d62 0%, #00193c 100%);
+  color: #ffffff !important;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 14px rgba(0, 45, 98, 0.25);
+  font-weight: 600;
+  font-size: 0.9rem;
+  border-radius: 30px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 22px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-planner:hover {
+  background: linear-gradient(135deg, #003b80 0%, #00265a 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 45, 98, 0.35);
 }
 
 *, *::before, *::after {

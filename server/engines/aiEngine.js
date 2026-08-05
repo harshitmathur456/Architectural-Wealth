@@ -59,7 +59,7 @@ async function callGemini(systemPrompt, userPrompt, enableSearch = false) {
   return data.candidates[0].content.parts[0].text;
 }
 
-async function callGroq(systemPrompt, message, conversationHistory = [], userContext = {}) {
+async function callGroq(systemPrompt, userPromptOrMessage, conversationHistory = [], userContext = {}) {
   const apiKey = process.env.GROQ_API_KEY;
   if (!apiKey || apiKey === 'your-groq-api-key-here') {
     throw new Error("Missing Groq API Key");
@@ -73,14 +73,16 @@ async function callGroq(systemPrompt, message, conversationHistory = [], userCon
     { role: 'system', content: systemPrompt + (contextPrompt ? `\n\n${contextPrompt}` : '') }
   ];
 
-  for (const msg of conversationHistory.slice(-6)) {
-    messages.push({
-      role: msg.role === 'assistant' ? 'assistant' : 'user',
-      content: msg.content
-    });
+  if (Array.isArray(conversationHistory)) {
+    for (const msg of conversationHistory.slice(-6)) {
+      messages.push({
+        role: msg.role === 'assistant' ? 'assistant' : 'user',
+        content: msg.content
+      });
+    }
   }
 
-  messages.push({ role: 'user', content: message });
+  messages.push({ role: 'user', content: userPromptOrMessage });
 
   const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
@@ -105,10 +107,19 @@ async function callGroq(systemPrompt, message, conversationHistory = [], userCon
 }
 
 /**
- * Generate financial advice based on logic engine output
+ * Generate financial advice based on logic engine output (Uses Groq AI)
  */
 async function generateAdvice(logicOutput, userContext = {}) {
   const userPrompt = buildAdvicePrompt(logicOutput, userContext);
+
+  if (process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== 'your-groq-api-key-here') {
+    try {
+      return await callGroq(SYSTEM_PROMPT, userPrompt, [], userContext);
+    } catch (groqError) {
+      console.error('Groq AI Advice Error:', groqError.message, '- falling back to Gemini');
+    }
+  }
+
   try {
     return await callGemini(SYSTEM_PROMPT, userPrompt);
   } catch (error) {
@@ -158,6 +169,14 @@ Calculated EMI: ₹${emi}
 
 Act as an AI mentor. Judge this purchase. Is it manageable? Is the EMI too high for their surplus? Tell them the harsh truth but keep it encouraging. Max 2 paragraphs. Format nicely.`;
 
+  if (process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== 'your-groq-api-key-here') {
+    try {
+      return await callGroq(system, prompt);
+    } catch (groqErr) {
+      console.error('Groq Vehicle Mentor Error:', groqErr.message);
+    }
+  }
+
   try {
     return await callGemini(system, prompt);
   } catch(error) {
@@ -201,6 +220,14 @@ Provide a concise, encouraging verdict.
 3. Keep it under 3 paragraphs. Use bullet points if helpful.`;
 
   const prompt = `Give me your strategic recommendation for my ${goalCategory} goal.`;
+
+  if (process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== 'your-groq-api-key-here') {
+    try {
+      return await callGroq(system, prompt);
+    } catch (groqErr) {
+      console.error('Groq Goal Advice Error:', groqErr.message);
+    }
+  }
 
   try {
     return await callGemini(system, prompt);
