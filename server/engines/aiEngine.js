@@ -1,30 +1,21 @@
 /**
- * AI Engine — LLM Mentor Personality (Groq AI Version)
+ * AI Engine — Groq AI Integration (llama-3.3-70b-versatile)
  * 
- * Powered by Groq AI (Llama 3.3 70B Versatile).
- * Converts numbers into warm, human, actionable advice.
+ * Powered strictly by Groq API.
  */
 
-const SYSTEM_PROMPT = `You are a warm, knowledgeable financial mentor for Indian users. Your name is "Sovereign Mentor".
-PERSONALITY:
-- Friendly, supportive, and encouraging
-- Like a wise older sibling who knows finance
-- Use simple language, avoid complex jargon
-- Occasionally use relatable Indian examples (chai budget, festival expenses, etc.)
-RULES:
-1. Always suggest savings, investment, and risk control
-2. Recommend SIPs in mutual funds for long-term goals
-3. Emphasize emergency fund (6 months expenses)
-4. Mention tax-saving options when relevant (PPF, ELSS, NPS)
-5. Be practical — don't suggest overly restrictive budgets
-6. Keep responses concise (3-5 paragraphs max)
-7. Use emojis sparingly for warmth
-8. Always end with ONE actionable next step
+const SYSTEM_PROMPT = `You are Sovereign Curator — an elite, highly sophisticated Private Wealth Manager and Financial Architect.
+Your role is to analyze the user's financial profile, income, expenses, and wealth goals, and provide precision advice on capital allocation, SIP investment strategies, loan structuring, and risk management.
 
-CURRENCY: Always use ₹ (Indian Rupees)`;
+Tone: Professional, direct, encouraging, precise.
+Rules:
+1. Always base advice on the user's exact financial numbers provided in context.
+2. Recommend realistic SIP allocations and debt-management tactics.
+3. Be clear on risk vs reward.
+4. Keep answers clean, well-formatted with markdown subheadings, bullet points, and exact numbers in ₹ (INR).`;
 
 /**
- * Call Groq API via fetch
+ * Call Groq API endpoint
  */
 async function callGroq(systemPrompt, userPromptOrMessage, conversationHistory = [], userContext = {}) {
   const apiKey = process.env.GROQ_API_KEY;
@@ -71,7 +62,7 @@ ${target ? `- EXACT TARGET HOUSE / GOAL PRICE: ₹${target.toLocaleString('en-IN
       model: 'llama-3.3-70b-versatile',
       messages,
       temperature: 0.7,
-      max_tokens: 1024
+      max_tokens: 1200
     })
   });
 
@@ -177,24 +168,50 @@ Provide a concise, encouraging verdict.
  * Build prompt for advice generation
  */
 function buildAdvicePrompt(logicOutput, userContext) {
-  const { income, expenses, savings, score, sip, goal, goalTimeline, expenseAnalysis } = logicOutput;
+  const { income, expenses, savings, score, sip, goal, goalTimeline, expenseAnalysis, strategies } = logicOutput;
 
-  return `Analyze this Indian user's finances and give personalized advice:
+  let strategiesText = '';
+  if (strategies) {
+    strategiesText = `
+FINANCING STRATEGIES COMPARISON (3 PATHWAYS):
+1. ONLY LOAN (100% Debt Financed):
+   - Down Payment: ₹${strategies.onlyLoan.downPayment.toLocaleString('en-IN')}
+   - Loan Amount: ₹${strategies.onlyLoan.loanAmount.toLocaleString('en-IN')}
+   - Monthly EMI: ₹${strategies.onlyLoan.monthlyEmi.toLocaleString('en-IN')}/month (${strategies.onlyLoan.tenureYears} yrs @ ${strategies.onlyLoan.interestRate}%)
+   - Total Interest Cost: ₹${strategies.onlyLoan.totalInterestPaid.toLocaleString('en-IN')}
+
+2. ONLY SIP (100% DEBT-FREE):
+   - Monthly SIP: ₹${strategies.onlySip.monthlySip.toLocaleString('en-IN')}/month (12% CAGR)
+   - Horizon Needed: ${strategies.onlySip.yearsNeeded} years (${strategies.onlySip.monthsNeeded} months)
+   - Total Wealth Created / Interest Avoided: ₹${strategies.onlySip.wealthGained.toLocaleString('en-IN')}
+
+3. HYBRID (LOAN + PARALLEL SIP):
+   - Down Payment: ₹${strategies.hybrid.downPayment.toLocaleString('en-IN')}
+   - Reduced EMI: ₹${strategies.hybrid.monthlyEmi.toLocaleString('en-IN')}/month
+   - Parallel SIP: ₹${strategies.hybrid.parallelSip.toLocaleString('en-IN')}/month
+   - Estimated Loan Prepayment: ~${strategies.hybrid.payoffEstimateYears} years (Saves ~₹${strategies.hybrid.interestSavedEstimate.toLocaleString('en-IN')} in interest)
+`;
+  }
+
+  return `Analyze this user's finances and provide a comprehensive comparison between these 3 financing options:
 
 FINANCIAL PROFILE:
 - Monthly Income: ₹${income.toLocaleString('en-IN')}
 - Monthly Expenses: ₹${expenses.toLocaleString('en-IN')}
-- Monthly Savings: ₹${savings.toLocaleString('en-IN')}
+- Monthly Savings / Surplus: ₹${savings.toLocaleString('en-IN')}
 - Savings Rate: ${expenseAnalysis.savingsPercent}%
-- Financial Score: ${score}/10 (${expenseAnalysis.rating})
+- Financial Health Score: ${score}/10 (${expenseAnalysis.rating})
 
-GOAL: ${goal || 'Not specified'}
-${goalTimeline ? `- Target Amount: ₹${goalTimeline.targetAmount.toLocaleString('en-IN')}
-- Estimated Timeline: ${goalTimeline.months} months (${goalTimeline.years} years)` : ''}
+GOAL: ${goal || 'House'}
+${goalTimeline ? `- Target Goal Amount: ₹${goalTimeline.targetAmount.toLocaleString('en-IN')}
+- Estimated Horizon: ${goalTimeline.months} months (${goalTimeline.years} years)` : ''}
 
-RECOMMENDED: Minimum ₹${sip.toLocaleString('en-IN')}/month in SIPs.
+${strategiesText}
 
-Give practical, actionable advice for this specific situation. Address their goal directly.`;
+Provide a structured, professional strategic verdict explaining:
+1. **Loan vs SIP Analysis**: Compare taking a pure Loan vs pure SIP vs Hybrid.
+2. **Which Strategy Fits Best**: Recommend the ideal path for their salary (₹${income.toLocaleString('en-IN')}) and surplus.
+3. **Actionable Execution Plan**: Clear next steps. Format with bold headers and bullet points.`;
 }
 
 function getFallbackAdvice(logicOutput) {

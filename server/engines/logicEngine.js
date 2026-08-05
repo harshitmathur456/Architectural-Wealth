@@ -20,7 +20,6 @@ const GOAL_COSTS = {
 
 /**
  * Calculate financial score (1–10)
- * Based on savings ratio, expense discipline, and goal feasibility
  */
 function calculateFinancialScore(income, expenses, savings) {
   let score = 0;
@@ -56,7 +55,6 @@ function calculateFinancialScore(income, expenses, savings) {
  */
 function calculateSIP(savings) {
   if (savings <= 0) return 0;
-  // Recommend investing 50% of monthly savings
   return Math.round(savings * 0.5);
 }
 
@@ -71,8 +69,85 @@ function calculateGoalTimeline(savings, goal, goalAmount) {
   return {
     months,
     years: parseFloat((months / 12).toFixed(1)),
-    achievable: months <= 360, // Within 30 years
+    achievable: months <= 360,
     targetAmount
+  };
+}
+
+/**
+ * Calculate 3 detailed strategies for achieving the goal:
+ * 1. Only Loan (100% Debt Financed)
+ * 2. Only SIP (Pure Investment, Zero Debt)
+ * 3. Hybrid (Loan + Parallel SIP for Early Prepayment)
+ */
+function calculateLoanVsSipStrategies(targetAmount, savings, goalCategory = 'house') {
+  if (!targetAmount || targetAmount <= 0) targetAmount = 5000000;
+  if (!savings || savings <= 0) savings = 10000;
+
+  const tenureYears = goalCategory === 'house' ? 20 : (goalCategory === 'car' ? 5 : 7);
+  const tenureMonths = tenureYears * 12;
+  const interestRatePa = 8.5; // 8.5% annual rate
+  const monthlyRate = (interestRatePa / 12) / 100;
+
+  // 1. ONLY LOAN STRATEGY (20% Down payment, 80% Loan)
+  const loanDownPaymentPct = 0.20;
+  const loanDownPayment = Math.round(targetAmount * loanDownPaymentPct);
+  const loanPrincipal = targetAmount - loanDownPayment;
+  const loanEmi = Math.round((loanPrincipal * monthlyRate * Math.pow(1 + monthlyRate, tenureMonths)) / (Math.pow(1 + monthlyRate, tenureMonths) - 1));
+  const totalLoanPaid = (loanEmi * tenureMonths) + loanDownPayment;
+  const totalLoanInterest = (loanEmi * tenureMonths) - loanPrincipal;
+
+  // 2. ONLY SIP STRATEGY (12% CAGR expected return)
+  const expectedCagr = 0.12;
+  const monthlyCagr = expectedCagr / 12;
+  const monthlySip = Math.round(savings * 0.6); // Allocate 60% of surplus
+  
+  let monthsToTargetSip = 360;
+  if (monthlySip > 0) {
+    const num = (targetAmount * monthlyCagr) / (monthlySip * (1 + monthlyCagr)) + 1;
+    if (num > 1) {
+      monthsToTargetSip = Math.ceil(Math.log(num) / Math.log(1 + monthlyCagr));
+    }
+  }
+  const totalSipInvested = monthlySip * monthsToTargetSip;
+  const sipWealthGained = targetAmount - totalSipInvested;
+
+  // 3. HYBRID STRATEGY (30% Down Payment, 70% Loan + 30% Parallel SIP)
+  const hybridDownPayment = Math.round(targetAmount * 0.30);
+  const hybridPrincipal = targetAmount - hybridDownPayment;
+  const hybridTenureMonths = Math.round(tenureMonths * 0.75); // Shorter 15-year baseline
+  const hybridEmi = Math.round((hybridPrincipal * monthlyRate * Math.pow(1 + monthlyRate, hybridTenureMonths)) / (Math.pow(1 + monthlyRate, hybridTenureMonths) - 1));
+  const parallelSip = Math.round(savings * 0.30);
+
+  return {
+    targetAmount,
+    onlyLoan: {
+      downPayment: loanDownPayment,
+      loanAmount: loanPrincipal,
+      tenureYears,
+      interestRate: interestRatePa,
+      monthlyEmi: loanEmi,
+      totalInterestPaid: Math.max(0, totalLoanInterest),
+      totalCost: totalLoanPaid,
+      affordable: loanEmi <= (savings * 0.5)
+    },
+    onlySip: {
+      monthlySip,
+      expectedCagr: 12,
+      monthsNeeded: monthsToTargetSip,
+      yearsNeeded: parseFloat((monthsToTargetSip / 12).toFixed(1)),
+      totalInvested: totalSipInvested,
+      wealthGained: Math.max(0, sipWealthGained),
+      zeroDebt: true
+    },
+    hybrid: {
+      downPayment: hybridDownPayment,
+      loanAmount: hybridPrincipal,
+      monthlyEmi: hybridEmi,
+      parallelSip,
+      payoffEstimateYears: Math.min(tenureYears, Math.max(4, Math.round(tenureYears * 0.5))),
+      interestSavedEstimate: Math.round(totalLoanInterest * 0.45)
+    }
   };
 }
 
@@ -142,6 +217,7 @@ function analyze(data) {
   const sip = calculateSIP(savings);
   const goalTimeline = calculateGoalTimeline(savings, goal, goalAmount);
   const expenseAnalysis = analyzeExpenses(income, expenses);
+  const strategies = calculateLoanVsSipStrategies(goalTimeline.targetAmount, savings, goal);
 
   return {
     income,
@@ -151,6 +227,7 @@ function analyze(data) {
     sip,
     goal,
     goalTimeline,
+    strategies,
     expenseAnalysis,
     monthlyBreakdown: {
       income,
@@ -162,4 +239,4 @@ function analyze(data) {
   };
 }
 
-module.exports = { analyze, calculateFinancialScore, calculateSIP, calculateGoalTimeline };
+module.exports = { analyze, calculateFinancialScore, calculateSIP, calculateGoalTimeline, calculateLoanVsSipStrategies };

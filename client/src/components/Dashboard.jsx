@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 function formatINR(num) {
+  if (num === null || num === undefined || isNaN(num)) return '₹0';
   return '₹' + Number(num).toLocaleString('en-IN');
 }
 
@@ -149,11 +150,148 @@ export default function Dashboard({ data, onGoToChat }) {
         </div>
       </div>
 
+      {/* 3-WAY FINANCING STRATEGIES COMPARISON (ONLY LOAN, ONLY SIP, HYBRID LOAN+SIP) */}
+      {data.strategies && (
+        <div className="card animate-in" style={{ marginBottom: 24 }}>
+          <div className="card-header" style={{ marginBottom: 16 }}>
+            <span className="icon">🏛️</span>
+            <h3>Goal Financing Pathways</h3>
+            <span style={{ fontSize: '0.75rem', color: 'var(--primary)', fontWeight: 700, marginLeft: 'auto', background: '#e3f2fd', padding: '4px 10px', borderRadius: 12 }}>
+              Powered by Groq AI Engine
+            </span>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(270px, 1fr))', gap: 16, marginBottom: 12 }}>
+            {/* 1. ONLY LOAN */}
+            <div style={{
+              background: 'var(--surface-container-low)',
+              border: '1px solid rgba(211,47,47,0.2)',
+              borderRadius: 'var(--radius-md)',
+              padding: 18,
+              display: 'flex',
+              flexDirection: 'column',
+              justify: 'space-between'
+            }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                  <span style={{ fontSize: '0.82rem', fontWeight: 800, color: '#d32f2f', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    🏦 1. Only Loan
+                  </span>
+                  <span style={{ fontSize: '0.7rem', background: 'rgba(211,47,47,0.1)', color: '#d32f2f', padding: '2px 8px', borderRadius: 10, fontWeight: 700 }}>
+                    100% Debt
+                  </span>
+                </div>
+
+                <div style={{ fontSize: '1.4rem', fontFamily: 'Manrope', fontWeight: 800, color: '#d32f2f', marginBottom: 12 }}>
+                  {formatINR(data.strategies.onlyLoan.monthlyEmi)}<span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--outline)' }}> /mo EMI</span>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: '0.82rem' }}>
+                  <MetricRow label="Down Payment (20%)" value={formatINR(data.strategies.onlyLoan.downPayment)} color="var(--on-surface)" />
+                  <MetricRow label="Loan Principal" value={formatINR(data.strategies.onlyLoan.loanAmount)} color="var(--on-surface)" />
+                  <MetricRow label="Tenure & Rate" value={`${data.strategies.onlyLoan.tenureYears} Yrs @ ${data.strategies.onlyLoan.interestRate}%`} color="var(--outline)" />
+                  <MetricRow label="Total Interest Paid" value={formatINR(data.strategies.onlyLoan.totalInterestPaid)} color="#d32f2f" />
+                </div>
+              </div>
+
+              <div style={{ marginTop: 14, paddingTop: 10, borderTop: '1px dashed rgba(211,47,47,0.2)', fontSize: '0.75rem', color: 'var(--outline)' }}>
+                ⚡ Immediate access to goal, but high cumulative interest cost over {data.strategies.onlyLoan.tenureYears} years.
+              </div>
+            </div>
+
+            {/* 2. ONLY SIP */}
+            <div style={{
+              background: 'var(--surface-container-low)',
+              border: '1px solid rgba(56,142,60,0.2)',
+              borderRadius: 'var(--radius-md)',
+              padding: 18,
+              display: 'flex',
+              flexDirection: 'column',
+              justify: 'space-between'
+            }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                  <span style={{ fontSize: '0.82rem', fontWeight: 800, color: '#2e7d32', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    📈 2. Only SIP
+                  </span>
+                  <span style={{ fontSize: '0.7rem', background: 'rgba(56,142,60,0.1)', color: '#2e7d32', padding: '2px 8px', borderRadius: 10, fontWeight: 700 }}>
+                    100% Debt-Free
+                  </span>
+                </div>
+
+                <div style={{ fontSize: '1.4rem', fontFamily: 'Manrope', fontWeight: 800, color: '#2e7d32', marginBottom: 12 }}>
+                  {formatINR(data.strategies.onlySip.monthlySip)}<span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--outline)' }}> /mo SIP</span>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: '0.82rem' }}>
+                  <MetricRow label="Time Horizon" value={`${data.strategies.onlySip.yearsNeeded} Years`} color="#2e7d32" />
+                  <MetricRow label="Expected Growth" value="12.0% CAGR" color="var(--on-surface)" />
+                  <MetricRow label="Capital Invested" value={formatINR(data.strategies.onlySip.totalInvested)} color="var(--on-surface)" />
+                  <MetricRow label="Wealth Created" value={formatINR(data.strategies.onlySip.wealthGained)} color="#2e7d32" />
+                </div>
+              </div>
+
+              <div style={{ marginTop: 14, paddingTop: 10, borderTop: '1px dashed rgba(56,142,60,0.2)', fontSize: '0.75rem', color: 'var(--outline)' }}>
+                🛡️ Zero interest or debt burden. Pure compounding wealth accumulation to buy outright in cash.
+              </div>
+            </div>
+
+            {/* 3. HYBRID LOAN + SIP */}
+            <div style={{
+              background: 'linear-gradient(135deg, rgba(2,136,209,0.06), rgba(0,108,71,0.06))',
+              border: '1.5px solid var(--primary-container)',
+              borderRadius: 'var(--radius-md)',
+              padding: 18,
+              display: 'flex',
+              flexDirection: 'column',
+              justify: 'space-between'
+            }}>
+              <div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 10 }}>
+                  <span style={{ fontSize: '0.82rem', fontWeight: 800, color: 'var(--primary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                    ⚖️ 3. Hybrid (Loan + SIP)
+                  </span>
+                  <span style={{ fontSize: '0.7rem', background: 'var(--primary-container)', color: 'var(--on-primary-container)', padding: '2px 8px', borderRadius: 10, fontWeight: 800 }}>
+                    ⭐ Recommended
+                  </span>
+                </div>
+
+                <div style={{ display: 'flex', gap: 10, alignItems: 'baseline', marginBottom: 12 }}>
+                  <div>
+                    <span style={{ fontSize: '1.15rem', fontFamily: 'Manrope', fontWeight: 800, color: 'var(--primary)' }}>
+                      {formatINR(data.strategies.hybrid.monthlyEmi)}
+                    </span>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--outline)' }}> EMI</span>
+                  </div>
+                  <span style={{ fontSize: '0.9rem', color: 'var(--outline)' }}>+</span>
+                  <div>
+                    <span style={{ fontSize: '1.15rem', fontFamily: 'Manrope', fontWeight: 800, color: '#2e7d32' }}>
+                      {formatINR(data.strategies.hybrid.parallelSip)}
+                    </span>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--outline)' }}> SIP</span>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, fontSize: '0.82rem' }}>
+                  <MetricRow label="Down Payment (30%)" value={formatINR(data.strategies.hybrid.downPayment)} color="var(--on-surface)" />
+                  <MetricRow label="Est. Loan Prepayment" value={`~${data.strategies.hybrid.payoffEstimateYears} Years`} color="var(--primary)" />
+                  <MetricRow label="Estimated Interest Saved" value={`~${formatINR(data.strategies.hybrid.interestSavedEstimate)}`} color="#2e7d32" />
+                </div>
+              </div>
+
+              <div style={{ marginTop: 14, paddingTop: 10, borderTop: '1px dashed var(--primary-container)', fontSize: '0.75rem', color: 'var(--on-surface-variant)', fontWeight: 600 }}>
+                💡 Balanced path: Get early possession while parallel SIP growth helps prepay your loan years ahead of schedule!
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* AI Advice */}
       <div className="card advice-card animate-in">
         <div className="card-header">
           <span className="icon">🧠</span>
-          <h3>Private Wealth Mentor</h3>
+          <h3>Private Wealth Mentor (Groq AI Strategic Breakdown)</h3>
         </div>
         <div style={{
           padding: '20px 24px',

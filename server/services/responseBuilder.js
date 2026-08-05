@@ -20,6 +20,7 @@ function buildAnalysisResponse(logicOutput) {
       sip: logicOutput.sip,
       goal: logicOutput.goal,
       goalTimeline: logicOutput.goalTimeline,
+      strategies: logicOutput.strategies,
       expenseAnalysis: logicOutput.expenseAnalysis,
       monthlyBreakdown: logicOutput.monthlyBreakdown
     },
@@ -43,6 +44,7 @@ function buildAdviceResponse(logicOutput, aiAdvice) {
       sip: logicOutput.sip,
       goal: logicOutput.goal,
       goalTimeline: logicOutput.goalTimeline,
+      strategies: logicOutput.strategies,
       expenseAnalysis: logicOutput.expenseAnalysis,
       monthlyBreakdown: logicOutput.monthlyBreakdown,
       // AI Engine output
