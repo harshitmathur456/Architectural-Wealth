@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { formatWithCommas, parseRawNumber } from '../utils/formatters';
 
-const API = 'http://localhost:5000/api';
+const API = import.meta.env.VITE_API_URL || '/api';
 
 const CATEGORIES = [
   { id: 'smartphone', label: 'Smartphone', icon: '📱' },

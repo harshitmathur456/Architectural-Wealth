@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 
-const API = 'http://localhost:5000/api';
+const API = import.meta.env.VITE_API_URL || '/api';
 
 const QUICK_ACTIONS = [
   'Optimize my SIP allocation',

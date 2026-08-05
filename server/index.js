@@ -38,17 +38,21 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Start server
-app.listen(PORT, () => {
-  const hasGroq = process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== 'your-groq-api-key-here';
-  const hasSupabase = Boolean(process.env.SUPABASE_KEY);
-  console.log(`\n🚀 Sovereign Curator Server running on http://localhost:${PORT}`);
-  console.log(`📊 Logic Engine: ✅ Active`);
-  console.log(`🤖 AI Engine: ${hasGroq ? '✅ Active (Groq AI)' : '⚠️  Fallback mode'}`);
-  console.log(`🗄️ Database: ${hasSupabase ? '✅ Active (Supabase)' : '⚠️  Not configured'}`);
-  console.log(`\nEndpoints:`);
-  console.log(`  POST /api/analyze  → Financial calculations`);
-  console.log(`  POST /api/advice   → Full mentorship advice & Supabase storage`);
-  console.log(`  POST /api/chat     → Chat with Groq AI mentor`);
-  console.log(`  GET  /api/health   → Server status\n`);
-});
+// Start server (when not running in Vercel serverless environment)
+if (!process.env.VERCEL) {
+  app.listen(PORT, () => {
+    const hasGroq = process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== 'your-groq-api-key-here';
+    const hasSupabase = Boolean(process.env.SUPABASE_KEY);
+    console.log(`\n🚀 Sovereign Curator Server running on http://localhost:${PORT}`);
+    console.log(`📊 Logic Engine: ✅ Active`);
+    console.log(`🤖 AI Engine: ${hasGroq ? '✅ Active (Groq AI)' : '⚠️  Fallback mode'}`);
+    console.log(`🗄️ Database: ${hasSupabase ? '✅ Active (Supabase)' : '⚠️  Not configured'}`);
+    console.log(`\nEndpoints:`);
+    console.log(`  POST /api/analyze  → Financial calculations`);
+    console.log(`  POST /api/advice   → Full mentorship advice & Supabase storage`);
+    console.log(`  POST /api/chat     → Chat with Groq AI mentor`);
+    console.log(`  GET  /api/health   → Server status\n`);
+  });
+}
+
+module.exports = app;

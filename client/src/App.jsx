@@ -5,7 +5,7 @@ import Dashboard from './components/Dashboard';
 import ChatUI from './components/ChatUI';
 import Login from './components/Login';
 
-const API = 'http://localhost:5000/api';
+const API = import.meta.env.VITE_API_URL || '/api';
 
 export default function App() {
   const [userEmail, setUserEmail] = useState(() => localStorage.getItem('userEmail') || '');
