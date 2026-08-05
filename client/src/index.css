@@ -164,6 +164,27 @@ h1, h2, h3, h4, h5, h6 {
   background: var(--surface-container-low);
 }
 
+.btn-logout {
+  background: rgba(186, 26, 26, 0.08);
+  color: var(--error);
+  border: 1px solid rgba(186, 26, 26, 0.2);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease-in-out;
+}
+
+.btn-logout:hover {
+  background: rgba(186, 26, 26, 0.15);
+  border-color: var(--error);
+  transform: translateY(-1px);
+}
+
 /* ═══════════════════════════════════════════
    BOTTOM TAB BAR
    ═══════════════════════════════════════════ */

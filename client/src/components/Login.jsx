@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 import '../index.css';
 
 export default function Login({ onLogin }) {
+  const [email, setEmail] = useState('user@architecturalwealth.com');
+  const [password, setPassword] = useState('');
+
   const handleLogin = (e) => {
     e.preventDefault();
-    onLogin();
+    onLogin(email || 'user@architecturalwealth.com');
   };
 
   return (
@@ -37,7 +40,13 @@ export default function Login({ onLogin }) {
             <form onSubmit={handleLogin}>
               <div className="form-group-login">
                 <label>EMAIL ADDRESS</label>
-                <input type="email" placeholder="name@institution.com" required />
+                <input 
+                  type="email" 
+                  placeholder="name@institution.com" 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required 
+                />
               </div>
 
               <div className="form-group-login">

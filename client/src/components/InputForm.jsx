@@ -9,11 +9,10 @@ const GOALS = [
   { value: 'car', label: 'Vehicle', icon: '🚗' },
   { value: 'vacation', label: 'Travel', icon: '✈️' },
   { value: 'education', label: 'Further Studies', icon: '🎓' },
-  { value: 'business', label: 'Portfolio', icon: '📊' },
   { value: 'other', label: 'Custom', icon: '➕' },
 ];
 
-export default function InputForm({ onAnalysisComplete }) {
+export default function InputForm({ userEmail, onAnalysisComplete }) {
   const [showPlanner, setShowPlanner] = useState(false);
   const [formData, setFormData] = useState({
     income: '',
@@ -21,7 +20,7 @@ export default function InputForm({ onAnalysisComplete }) {
     goal: 'house',
     goalAmount: '',
   });
-  
+
   // Real Estate State
   const [realEstateConfig, setRealEstateConfig] = useState({
     propertyType: 'flat',
@@ -186,7 +185,7 @@ export default function InputForm({ onAnalysisComplete }) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          email: formData.email || 'user@architecturalwealth.com',
+          email: userEmail || 'user@architecturalwealth.com',
           income: inc,
           expenses: exp,
           goal: formData.goal,
@@ -229,22 +228,6 @@ export default function InputForm({ onAnalysisComplete }) {
         {/* Left Column — Form */}
         <form onSubmit={handleSubmit} className="animate-in">
           <div className="card" style={{ marginBottom: 24 }}>
-            {/* Account Email ID */}
-            <div className="form-group" style={{ marginBottom: 16 }}>
-              <label className="form-label" htmlFor="email">Login Email ID</label>
-              <input
-                id="email"
-                type="email"
-                name="email"
-                className="form-input"
-                placeholder="user@example.com"
-                value={formData.email}
-                onChange={(e) => setFormData(prev => ({ ...prev, email: e.target.value }))}
-                style={{ width: '100%' }}
-              />
-              <span className="form-hint">Used for storing your profile & goals in Supabase.</span>
-            </div>
-
             {/* Income */}
             <div className="form-group">
               <label className="form-label" htmlFor="income">Monthly Salary</label>
