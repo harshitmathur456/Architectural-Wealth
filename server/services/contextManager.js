@@ -5,7 +5,7 @@
  * Injects context into AI prompts for personalized responses.
  */
 
-// In-memory store (can be replaced with Firebase/DB later)
+// In-memory store
 const userProfiles = new Map();
 const conversationHistories = new Map();
 
@@ -41,7 +41,9 @@ function saveAnalysis(userId, analysisResult) {
     timestamp: new Date().toISOString(),
     score: analysisResult.score,
     savings: analysisResult.savings,
-    income: analysisResult.income
+    income: analysisResult.income,
+    goal: analysisResult.goal,
+    targetAmount: analysisResult.goalTimeline ? analysisResult.goalTimeline.targetAmount : undefined
   });
   // Keep only last 10 analyses
   if (profile.analysisHistory.length > 10) {
@@ -88,12 +90,16 @@ function getUserContext(userId) {
   if (!profile || !profile.latestAnalysis) return {};
 
   const { latestAnalysis } = profile;
+  const targetAmount = latestAnalysis.goalTimeline ? latestAnalysis.goalTimeline.targetAmount : latestAnalysis.targetAmount;
+
   return {
     income: latestAnalysis.income,
     expenses: latestAnalysis.expenses,
     savings: latestAnalysis.savings,
     score: latestAnalysis.score,
     goal: latestAnalysis.goal,
+    targetAmount: targetAmount,
+    goalTimeline: latestAnalysis.goalTimeline,
     sip: latestAnalysis.sip
   };
 }

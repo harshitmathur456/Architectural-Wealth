@@ -32,9 +32,19 @@ async function callGroq(systemPrompt, userPromptOrMessage, conversationHistory =
     throw new Error("Missing Groq API Key");
   }
 
-  const contextPrompt = userContext.income
-    ? `USER CONTEXT: Income ₹${userContext.income}, Expenses ₹${userContext.expenses}, Savings ₹${userContext.savings}, Financial Score ${userContext.score}/10.`
-    : '';
+  let contextPrompt = '';
+  if (userContext && userContext.income) {
+    const target = userContext.targetAmount || userContext.goalAmount || (userContext.goalTimeline ? userContext.goalTimeline.targetAmount : null);
+    
+    contextPrompt = `IMPORTANT USER FINANCIAL CONTEXT (CRITICAL: ALWAYS USE THESE EXACT USER NUMBERS FOR CALCULATIONS AND CHAT ASSUMPTIONS):
+- Monthly Salary/Income: ₹${userContext.income.toLocaleString('en-IN')}
+- Monthly Expenses: ₹${userContext.expenses.toLocaleString('en-IN')}
+- Net Monthly Savings: ₹${userContext.savings.toLocaleString('en-IN')}
+- Financial Score: ${userContext.score}/10
+- Goal Category: ${userContext.goal || 'house'}
+${target ? `- EXACT TARGET HOUSE / GOAL PRICE: ₹${target.toLocaleString('en-IN')} (Do NOT assume ₹50,00,000! User's configured goal price is ₹${target.toLocaleString('en-IN')})` : ''}
+- Recommended SIP: ₹${(userContext.sip || 0).toLocaleString('en-IN')}/month`;
+  }
 
   const messages = [
     { role: 'system', content: systemPrompt + (contextPrompt ? `\n\n${contextPrompt}` : '') }
