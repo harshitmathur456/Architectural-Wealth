@@ -59,6 +59,51 @@ async function callGemini(systemPrompt, userPrompt, enableSearch = false) {
   return data.candidates[0].content.parts[0].text;
 }
 
+async function callGroq(systemPrompt, message, conversationHistory = [], userContext = {}) {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey || apiKey === 'your-groq-api-key-here') {
+    throw new Error("Missing Groq API Key");
+  }
+
+  const contextPrompt = userContext.income
+    ? `USER CONTEXT: Income ₹${userContext.income}, Expenses ₹${userContext.expenses}, Savings ₹${userContext.savings}, Financial Score ${userContext.score}/10.`
+    : '';
+
+  const messages = [
+    { role: 'system', content: systemPrompt + (contextPrompt ? `\n\n${contextPrompt}` : '') }
+  ];
+
+  for (const msg of conversationHistory.slice(-6)) {
+    messages.push({
+      role: msg.role === 'assistant' ? 'assistant' : 'user',
+      content: msg.content
+    });
+  }
+
+  messages.push({ role: 'user', content: message });
+
+  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      model: 'llama-3.3-70b-versatile',
+      messages,
+      temperature: 0.7,
+      max_tokens: 1024
+    })
+  });
+
+  const data = await response.json();
+  if (data.error) {
+    throw new Error(data.error.message || JSON.stringify(data.error));
+  }
+
+  return data.choices[0].message.content;
+}
+
 /**
  * Generate financial advice based on logic engine output
  */
@@ -73,10 +118,17 @@ async function generateAdvice(logicOutput, userContext = {}) {
 }
 
 /**
- * Chat with the mentor
+ * Chat with the mentor (uses Groq if available, falls back to Gemini)
  */
 async function chat(message, conversationHistory = [], userContext = {}) {
-  // We'll flatten history into the userPrompt for simplicity in this REST setup
+  if (process.env.GROQ_API_KEY && process.env.GROQ_API_KEY !== 'your-groq-api-key-here') {
+    try {
+      return await callGroq(SYSTEM_PROMPT, message, conversationHistory, userContext);
+    } catch (groqError) {
+      console.error('Groq AI Chat Error:', groqError.message, '- falling back to Gemini');
+    }
+  }
+
   const contextPrompt = userContext.income
     ? `\n\nUSER CONTEXT: Income ₹${userContext.income}, Expenses ₹${userContext.expenses}, Savings ₹${userContext.savings}, Financial Score ${userContext.score}/10.`
     : '';
