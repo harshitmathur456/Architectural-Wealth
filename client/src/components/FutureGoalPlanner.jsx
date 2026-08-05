@@ -79,10 +79,38 @@ export default function FutureGoalPlanner({ onClose }) {
             <input type="text" inputMode="numeric" className="form-input" placeholder="e.g. 1,20,000" value={formData.budget || ''} onChange={e => handleFormattedFieldChange('budget', e.target.value)} />
           </div>
           <div className="form-group" style={{ gridColumn: '1 / -1' }}>
-            <label>Purchase Urgency (Months away)</label>
-            <input type="range" min="1" max="12" step="1" style={{ width: '100%' }} onChange={e => handleFieldChange('urgencyMonths', e.target.value)} />
-            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginTop: 4 }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+              <label style={{ margin: 0, fontWeight: 600 }}>Purchase Urgency (Months away)</label>
+              <span style={{ 
+                fontSize: '0.85rem', 
+                fontWeight: 800, 
+                color: 'var(--primary)', 
+                fontFamily: 'Manrope', 
+                background: 'linear-gradient(135deg, #e3f2fd, #bbdefb)',
+                padding: '4px 12px', 
+                borderRadius: '16px',
+                border: '1px solid #90caf9',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}>
+                📅 {formData.urgencyMonths || 1} {Number(formData.urgencyMonths || 1) === 1 ? 'Month' : 'Months'} Selected
+              </span>
+            </div>
+            <input 
+              type="range" 
+              min="1" 
+              max="12" 
+              step="1" 
+              value={formData.urgencyMonths || 1}
+              style={{ width: '100%', accentColor: 'var(--primary)' }} 
+              onChange={e => handleFieldChange('urgencyMonths', e.target.value)} 
+            />
+            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', marginTop: 6, color: 'var(--outline)' }}>
               <span>Within 1 Month</span>
+              <span style={{ fontWeight: 700, color: 'var(--primary)', background: '#eef6ff', padding: '2px 8px', borderRadius: 8 }}>
+                Current: {formData.urgencyMonths || 1} {Number(formData.urgencyMonths || 1) === 1 ? 'Month' : 'Months'}
+              </span>
               <span>Flexible (12 Months)</span>
             </div>
           </div>
