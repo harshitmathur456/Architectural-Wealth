@@ -80,27 +80,37 @@ function calculateGoalTimeline(savings, goal, goalAmount) {
  * 2. Only SIP (Pure Investment, Zero Debt)
  * 3. Hybrid (Loan + Parallel SIP for Early Prepayment)
  */
-function calculateLoanVsSipStrategies(targetAmount, savings, goalCategory = 'house') {
+function calculateLoanVsSipStrategies(targetAmount, savings, goalCategory = 'house', customConfig = {}) {
   if (!targetAmount || targetAmount <= 0) targetAmount = 5000000;
   if (!savings || savings <= 0) savings = 10000;
 
-  const tenureYears = goalCategory === 'house' ? 20 : (goalCategory === 'car' ? 5 : 7);
+  // Use custom inputs if provided, else fallback to defaults
+  const tenureYears = Number(customConfig.tenureYears) > 0 
+    ? Number(customConfig.tenureYears) 
+    : (goalCategory === 'house' ? 20 : (goalCategory === 'car' ? 5 : 7));
+
+  const interestRatePa = Number(customConfig.interestRate) > 0 
+    ? Number(customConfig.interestRate) 
+    : 8.5;
+
+  const customDown = Number(customConfig.downPayment);
+  const loanDownPayment = (customDown && customDown > 0) ? Math.min(targetAmount, customDown) : Math.round(targetAmount * 0.20);
+  const loanPrincipal = Math.max(0, targetAmount - loanDownPayment);
+  
   const tenureMonths = tenureYears * 12;
-  const interestRatePa = 8.5; // 8.5% annual rate
   const monthlyRate = (interestRatePa / 12) / 100;
 
-  // 1. ONLY LOAN STRATEGY (20% Down payment, 80% Loan)
-  const loanDownPaymentPct = 0.20;
-  const loanDownPayment = Math.round(targetAmount * loanDownPaymentPct);
-  const loanPrincipal = targetAmount - loanDownPayment;
-  const loanEmi = Math.round((loanPrincipal * monthlyRate * Math.pow(1 + monthlyRate, tenureMonths)) / (Math.pow(1 + monthlyRate, tenureMonths) - 1));
+  const loanEmi = loanPrincipal > 0 
+    ? Math.round((loanPrincipal * monthlyRate * Math.pow(1 + monthlyRate, tenureMonths)) / (Math.pow(1 + monthlyRate, tenureMonths) - 1))
+    : 0;
+
   const totalLoanPaid = (loanEmi * tenureMonths) + loanDownPayment;
   const totalLoanInterest = (loanEmi * tenureMonths) - loanPrincipal;
 
   // 2. ONLY SIP STRATEGY (12% CAGR expected return)
   const expectedCagr = 0.12;
   const monthlyCagr = expectedCagr / 12;
-  const monthlySip = Math.round(savings * 0.6); // Allocate 60% of surplus
+  const monthlySip = Math.round(savings * 0.6);
   
   let monthsToTargetSip = 360;
   if (monthlySip > 0) {
@@ -112,11 +122,13 @@ function calculateLoanVsSipStrategies(targetAmount, savings, goalCategory = 'hou
   const totalSipInvested = monthlySip * monthsToTargetSip;
   const sipWealthGained = targetAmount - totalSipInvested;
 
-  // 3. HYBRID STRATEGY (30% Down Payment, 70% Loan + 30% Parallel SIP)
-  const hybridDownPayment = Math.round(targetAmount * 0.30);
-  const hybridPrincipal = targetAmount - hybridDownPayment;
-  const hybridTenureMonths = Math.round(tenureMonths * 0.75); // Shorter 15-year baseline
-  const hybridEmi = Math.round((hybridPrincipal * monthlyRate * Math.pow(1 + monthlyRate, hybridTenureMonths)) / (Math.pow(1 + monthlyRate, hybridTenureMonths) - 1));
+  // 3. HYBRID STRATEGY
+  const hybridDownPayment = Math.min(targetAmount, (customDown && customDown > 0) ? Math.round(customDown * 1.15) : Math.round(targetAmount * 0.30));
+  const hybridPrincipal = Math.max(0, targetAmount - hybridDownPayment);
+  const hybridTenureMonths = Math.round(tenureMonths * 0.75);
+  const hybridEmi = hybridPrincipal > 0 
+    ? Math.round((hybridPrincipal * monthlyRate * Math.pow(1 + monthlyRate, hybridTenureMonths)) / (Math.pow(1 + monthlyRate, hybridTenureMonths) - 1))
+    : 0;
   const parallelSip = Math.round(savings * 0.30);
 
   return {
@@ -145,8 +157,8 @@ function calculateLoanVsSipStrategies(targetAmount, savings, goalCategory = 'hou
       loanAmount: hybridPrincipal,
       monthlyEmi: hybridEmi,
       parallelSip,
-      payoffEstimateYears: Math.min(tenureYears, Math.max(4, Math.round(tenureYears * 0.5))),
-      interestSavedEstimate: Math.round(totalLoanInterest * 0.45)
+      payoffEstimateYears: Math.min(tenureYears, Math.max(3, Math.round(tenureYears * 0.5))),
+      interestSavedEstimate: Math.round(Math.max(0, totalLoanInterest) * 0.45)
     }
   };
 }
@@ -210,14 +222,14 @@ function generateSuggestions(rating, savings, income) {
  * Main analysis function — entry point
  */
 function analyze(data) {
-  const { income, expenses, goal, goalAmount } = data;
+  const { income, expenses, goal, goalAmount, customConfig } = data;
   
   const savings = income - expenses;
   const score = calculateFinancialScore(income, expenses, savings);
   const sip = calculateSIP(savings);
   const goalTimeline = calculateGoalTimeline(savings, goal, goalAmount);
   const expenseAnalysis = analyzeExpenses(income, expenses);
-  const strategies = calculateLoanVsSipStrategies(goalTimeline.targetAmount, savings, goal);
+  const strategies = calculateLoanVsSipStrategies(goalTimeline.targetAmount, savings, goal, customConfig);
 
   return {
     income,

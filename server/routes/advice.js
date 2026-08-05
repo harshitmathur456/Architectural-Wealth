@@ -13,7 +13,7 @@ const supabaseService = require('../services/supabaseService');
 
 router.post('/', async (req, res) => {
   try {
-    const { email, income, expenses, goal, goalAmount, userId } = req.body;
+    const { email, income, expenses, goal, goalAmount, customConfig, userId } = req.body;
 
     // Validate input
     if (!income || !expenses) {
@@ -23,12 +23,13 @@ router.post('/', async (req, res) => {
       }));
     }
 
-    // Step 1: Logic Engine
+    // Step 1: Logic Engine (with custom interest rate, tenure, down payment)
     const logicOutput = logicEngine.analyze({
       income: Number(income),
       expenses: Number(expenses),
       goal: goal || 'other',
-      goalAmount: goalAmount ? Number(goalAmount) : undefined
+      goalAmount: goalAmount ? Number(goalAmount) : undefined,
+      customConfig: customConfig || {}
     });
 
     // Save to context

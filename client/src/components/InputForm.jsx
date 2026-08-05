@@ -25,6 +25,7 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
   const [realEstateConfig, setRealEstateConfig] = useState({
     propertyType: 'flat',
     price: '',
+    downPayment: '',
     interestRate: 8.5,
     loanTenure: 20
   });
@@ -58,6 +59,11 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
     setRealEstateConfig(prev => ({ ...prev, price: formatted }));
   };
 
+  const handleRealEstateDownPaymentChange = (e) => {
+    const formatted = formatWithCommas(e.target.value);
+    setRealEstateConfig(prev => ({ ...prev, downPayment: formatted }));
+  };
+
   const handleVehicleDownPaymentChange = (e) => {
     const formatted = formatWithCommas(e.target.value);
     setVehicleConfig(prev => ({ ...prev, downPayment: formatted }));
@@ -68,6 +74,7 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
     const inc = parseRawNumber(formData.income);
     const exp = parseRawNumber(formData.expenses);
     const prc = parseRawNumber(realEstateConfig.price);
+    const dp = parseRawNumber(realEstateConfig.downPayment);
     if (!prc || !inc || !exp) return null;
     
     // Monthly disposable income
@@ -75,20 +82,24 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
     if (surplus <= 0) return { emi: 0, affordable: false, message: 'No surplus capital available.' };
 
     const P = prc;
-    // Assuming 20% downpayment, 80% loan
-    const L = P * 0.8;
-    const r = (Number(realEstateConfig.interestRate) / 12) / 100;
-    const n = Number(realEstateConfig.loanTenure) * 12;
+    const down = (dp && dp > 0) ? dp : P * 0.20;
+    const L = Math.max(0, P - down);
+    const r = (Number(realEstateConfig.interestRate || 8.5) / 12) / 100;
+    const n = Number(realEstateConfig.loanTenure || 20) * 12;
 
-    const emi = Math.round((L * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1));
+    const emi = L > 0 ? Math.round((L * r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1)) : 0;
     
     // Rule of thumb: EMI should not exceed 50% of surplus
     const affordable = emi <= (surplus * 0.5);
     
     return { 
       emi, 
+      down,
+      loanAmount: L,
       affordable, 
-      message: affordable ? 'Within affordable limits' : 'High risk (Exceeds 50% of surplus)' 
+      message: affordable 
+        ? `Within affordable limits (₹${formatWithCommas(String(Math.round(down)))} Down Payment)` 
+        : 'High risk (Exceeds 50% of surplus)' 
     };
   };
 
@@ -190,6 +201,11 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
           expenses: exp,
           goal: formData.goal,
           goalAmount: calculatedGoalAmount,
+          customConfig: {
+            interestRate: formData.goal === 'house' ? Number(realEstateConfig.interestRate || 8.5) : 8.5,
+            tenureYears: formData.goal === 'house' ? Number(realEstateConfig.loanTenure || 20) : 20,
+            downPayment: formData.goal === 'house' ? parseRawNumber(realEstateConfig.downPayment) : parseRawNumber(vehicleConfig.downPayment)
+          },
           userId: 'default',
         }),
       });
@@ -239,17 +255,17 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
                   inputMode="numeric"
                   name="income"
                   className="form-input"
-                  placeholder="0.00"
+                  placeholder="e.g. 1,00,000"
                   value={formData.income}
                   onChange={handleFormattedChange}
-                  style={{ width: '100%' }}
+                  style={{ paddingLeft: 36, width: '100%' }}
                 />
               </div>
               <span className="form-hint">Include all net salary, dividends, and rental income.</span>
             </div>
 
             {/* Expenses */}
-            <div className="form-group">
+            <div className="form-group" style={{ marginBottom: 0 }}>
               <label className="form-label" htmlFor="expenses">Monthly Expenditure</label>
               <div className="input-prefix">
                 <span className="prefix">₹</span>
@@ -259,15 +275,12 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
                   inputMode="numeric"
                   name="expenses"
                   className="form-input"
-                  placeholder="0.00"
+                  placeholder="e.g. 20,00,000"
                   value={formData.expenses}
                   onChange={handleFormattedChange}
-                  style={{ width: '100%' }}
+                  style={{ paddingLeft: 36, width: '100%' }}
                 />
               </div>
-              <span style={{ fontSize: '0.75rem', color: 'var(--outline)', marginTop: 2 }}>
-                Total recurring lifestyle and debt obligations.
-              </span>
             </div>
           </div>
 
@@ -321,7 +334,19 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
                     </div>
                   </div>
 
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12, marginBottom: 16 }}>
+                    <div>
+                      <label style={{ fontSize: '0.7rem', color: 'var(--outline)', fontWeight: 600 }}>Down Payment (₹)</label>
+                      <input 
+                        className="form-input" 
+                        type="text"
+                        inputMode="numeric" 
+                        placeholder="e.g. 15,00,000" 
+                        style={{ fontSize: '0.9rem', padding: '8px 4px', width: '100%' }}
+                        value={realEstateConfig.downPayment}
+                        onChange={handleRealEstateDownPaymentChange}
+                      />
+                    </div>
                     <div>
                       <label style={{ fontSize: '0.7rem', color: 'var(--outline)', fontWeight: 600 }}>Interest Rate (%)</label>
                       <input 
@@ -351,7 +376,7 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
                     return (
                       <div style={{ padding: 12, borderRadius: 6, background: afford.affordable ? 'rgba(0,108,71,0.1)' : 'rgba(186,26,26,0.1)', display: 'flex', flexDirection: 'column', gap: 4 }}>
                         <div style={{ fontSize: '0.8rem', color: 'var(--on-surface-variant)', fontWeight: 600 }}>
-                          Estimated Monthly EMI (80% Loan)
+                          Estimated Monthly EMI ({afford.down > 0 ? `₹${formatWithCommas(String(Math.round(afford.loanAmount)))} Loan` : '80% Loan'})
                         </div>
                         <div style={{ fontSize: '1.4rem', fontFamily: 'Manrope', fontWeight: 800, color: afford.affordable ? 'var(--secondary)' : 'var(--error)' }}>
                           ₹{afford.emi.toLocaleString('en-IN')}
