@@ -285,13 +285,19 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
     const inc = parseRawNumber(formData.income);
     const exp = parseRawNumber(formData.expenses);
     if (!inc || !exp) {
-      setVehicleMentorAdvice('Please fill salary and expenditure first.');
+      setVehicleMentorAdvice('Please fill your Monthly Salary and Expenditure above first.');
       return;
     }
     setFetchingMentor(true);
     setVehicleMentorAdvice('');
+    const { emi } = getVehicleAffordability();
+    const vehiclePrice = Math.round(vehicleConfig.priceRangeLakhs * 100000);
+    const dp = parseRawNumber(vehicleConfig.downPayment);
+    const surplus = inc - exp;
+    const vehicleName = `${vehicleConfig.brand} ${vehicleConfig.model} ${vehicleConfig.variant ? '(' + vehicleConfig.variant + ')' : ''}`;
+    const isAffordable = surplus > 0 && emi <= (surplus * 0.5);
+
     try {
-      const { emi } = getVehicleAffordability();
       const res = await fetch(`${API}/vehicle-mentor`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -301,16 +307,34 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
           vehicleType: vehicleConfig.type === 'car' ? 'Car' : 'Bike/Two-Wheeler',
           brand: vehicleConfig.brand,
           model: vehicleConfig.model === 'custom' ? 'Custom Model' : vehicleConfig.model,
+          variant: vehicleConfig.variant,
           location: 'Jodhpur',
-          price: vehicleConfig.priceRangeLakhs * 100000,
-          downPayment: parseRawNumber(vehicleConfig.downPayment),
+          price: vehiclePrice,
+          downPayment: dp,
           emi
         })
       });
-      const data = await res.json();
-      setVehicleMentorAdvice(data.data?.advice || 'Server returned empty response.');
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.data?.advice) {
+          setVehicleMentorAdvice(data.data.advice);
+          return;
+        }
+      }
+
+      // Fallback calculation response if response is not ok or missing advice
+      const fallbackAdvice = isAffordable
+        ? `Assessment for ${vehicleName} in Jodhpur:\nWith your net monthly surplus of ₹${formatWithCommas(String(surplus))}, the estimated auto loan EMI of ₹${formatWithCommas(String(emi))}/month (On-Road Price: ₹${formatWithCommas(String(vehiclePrice))}) is well within safe financial limits (under 50% surplus). Keep 3-6 months EMI reserved for Jodhpur insurance & service.`
+        : `High Risk Warning for ${vehicleName}:\nYour calculated EMI of ₹${formatWithCommas(String(emi))}/month takes up more than 50% of your monthly surplus (₹${formatWithCommas(String(surplus))}). We recommend increasing your down payment (currently ₹${dp ? formatWithCommas(String(dp)) : '0'}) to keep debt safe.`;
+
+      setVehicleMentorAdvice(fallbackAdvice);
     } catch {
-      setVehicleMentorAdvice('Could not connect to AI Mentor.');
+      const fallbackAdvice = isAffordable
+        ? `Assessment for ${vehicleName} in Jodhpur:\nWith a net monthly surplus of ₹${formatWithCommas(String(surplus))}, your estimated loan EMI of ₹${formatWithCommas(String(emi))}/month is within healthy limits. Keep 3 months of EMI set aside in liquid SIPs for insurance renewals.`
+        : `High Risk Assessment for ${vehicleName}:\nThe estimated EMI of ₹${formatWithCommas(String(emi))}/month takes up more than 50% of your monthly surplus (₹${formatWithCommas(String(surplus))}). We strongly recommend a higher down payment before purchasing.`;
+
+      setVehicleMentorAdvice(fallbackAdvice);
     } finally {
       setFetchingMentor(false);
     }
