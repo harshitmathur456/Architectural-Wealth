@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import FutureGoalPlanner from './FutureGoalPlanner';
 import { formatWithCommas, parseRawNumber } from '../utils/formatters';
 import { JODHPUR_CAR_CATALOG, JODHPUR_BIKE_CATALOG } from '../data/vehicleData';
+import { runClientSideAnalysis } from '../utils/clientLogicEngine';
 
 const API = import.meta.env.VITE_API_URL || '/api';
 
@@ -386,6 +387,12 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
       calculatedGoalAmount = parseRawNumber(formData.goalAmount);
     }
 
+    const customConfig = {
+      interestRate: formData.goal === 'house' ? Number(realEstateConfig.interestRate || 8.5) : 8.5,
+      tenureYears: formData.goal === 'house' ? Number(realEstateConfig.loanTenure || 20) : 20,
+      downPayment: formData.goal === 'house' ? parseRawNumber(realEstateConfig.downPayment) : parseRawNumber(vehicleConfig.downPayment)
+    };
+
     try {
       const res = await fetch(`${API}/advice`, {
         method: 'POST',
@@ -396,19 +403,38 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
           expenses: exp,
           goal: formData.goal,
           goalAmount: calculatedGoalAmount,
-          customConfig: {
-            interestRate: formData.goal === 'house' ? Number(realEstateConfig.interestRate || 8.5) : 8.5,
-            tenureYears: formData.goal === 'house' ? Number(realEstateConfig.loanTenure || 20) : 20,
-            downPayment: formData.goal === 'house' ? parseRawNumber(realEstateConfig.downPayment) : parseRawNumber(vehicleConfig.downPayment)
-          },
+          customConfig,
           userId: 'default',
         }),
       });
-      const data = await res.json();
-      if (data.success) onAnalysisComplete(data.data);
-      else setError(data.error?.message || 'Analysis failed.');
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.data) {
+          onAnalysisComplete(data.data);
+          return;
+        }
+      }
+
+      // If server returns non-ok or error format, execute deterministic client analysis
+      const fallbackAnalysis = runClientSideAnalysis({
+        income: inc,
+        expenses: exp,
+        goal: formData.goal,
+        goalAmount: calculatedGoalAmount,
+        customConfig
+      });
+      onAnalysisComplete(fallbackAnalysis);
     } catch {
-      setError('Server unavailable. Ensure backend runs on port 5000.');
+      // Execute seamless deterministic client analysis on network/server offline
+      const fallbackAnalysis = runClientSideAnalysis({
+        income: inc,
+        expenses: exp,
+        goal: formData.goal,
+        goalAmount: calculatedGoalAmount,
+        customConfig
+      });
+      onAnalysisComplete(fallbackAnalysis);
     } finally {
       setLoading(false);
     }
