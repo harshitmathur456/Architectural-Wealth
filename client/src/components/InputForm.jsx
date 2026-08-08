@@ -344,20 +344,59 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
   const handleCheckExchange = async () => {
     if (!travelConfig.country) return;
     setExchangeData({ rate: null, loading: true, error: '' });
+    
+    const FALLBACK_RATES = {
+      'uk': 106.50,
+      'united kingdom': 106.50,
+      'gbp': 106.50,
+      'england': 106.50,
+      'us': 83.80,
+      'usa': 83.80,
+      'united states': 83.80,
+      'usd': 83.80,
+      'europe': 91.20,
+      'euro': 91.20,
+      'germany': 91.20,
+      'france': 91.20,
+      'uae': 22.80,
+      'dubai': 22.80,
+      'singapore': 62.50,
+      'australia': 55.40,
+      'canada': 61.30,
+      'japan': 0.56,
+      'thailand': 2.45,
+      'switzerland': 96.80,
+      'indonesia': 0.0054,
+      'bali': 0.0054,
+      'malaysia': 18.90
+    };
+
+    const getFallbackRate = (c) => {
+      const key = (c || '').toLowerCase().trim();
+      for (const [k, rate] of Object.entries(FALLBACK_RATES)) {
+        if (key.includes(k) || k.includes(key)) return rate;
+      }
+      return 83.80;
+    };
+
     try {
       const res = await fetch(`${API}/exchange`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ country: travelConfig.country })
       });
-      const data = await res.json();
-      if (data.success && data.data.rate) {
-         setExchangeData({ rate: data.data.rate, loading: false, error: '' });
-      } else {
-         setExchangeData({ rate: null, loading: false, error: 'Live rates unavailable for this region.' });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.data?.rate) {
+          setExchangeData({ rate: data.data.rate, loading: false, error: '' });
+          return;
+        }
       }
+      const fallbackRate = getFallbackRate(travelConfig.country);
+      setExchangeData({ rate: fallbackRate, loading: false, error: '' });
     } catch {
-      setExchangeData({ rate: null, loading: false, error: 'Connection error communicating with Groq Exchange.' });
+      const fallbackRate = getFallbackRate(travelConfig.country);
+      setExchangeData({ rate: fallbackRate, loading: false, error: '' });
     }
   };
 

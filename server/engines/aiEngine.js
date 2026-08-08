@@ -125,8 +125,47 @@ Act as an AI vehicle purchase mentor. Evaluate this purchase specifically for bu
   }
 }
 
+const POPULAR_CURRENCIES = {
+  'uk': 106.50,
+  'united kingdom': 106.50,
+  'gbp': 106.50,
+  'england': 106.50,
+  'us': 83.80,
+  'usa': 83.80,
+  'united states': 83.80,
+  'usd': 83.80,
+  'europe': 91.20,
+  'euro': 91.20,
+  'germany': 91.20,
+  'france': 91.20,
+  'spain': 91.20,
+  'uae': 22.80,
+  'dubai': 22.80,
+  'singapore': 62.50,
+  'australia': 55.40,
+  'canada': 61.30,
+  'japan': 0.56,
+  'thailand': 2.45,
+  'switzerland': 96.80,
+  'indonesia': 0.0054,
+  'bali': 0.0054,
+  'vietnam': 0.0034,
+  'malaysia': 18.90
+};
+
+function getFallbackExchangeRate(country) {
+  if (!country) return 83.80;
+  const key = country.trim().toLowerCase();
+  for (const [k, rate] of Object.entries(POPULAR_CURRENCIES)) {
+    if (key.includes(k) || k.includes(key)) {
+      return rate;
+    }
+  }
+  return 83.80;
+}
+
 /**
- * Exchange Rate Fetcher using Groq AI
+ * Exchange Rate Fetcher using Groq AI with robust regional fallback
  */
 async function getExchangeRate(country) {
   const system = `You are a financial currency assistant. Provide the estimated or standard current exchange rate of 1 primary unit of ${country}'s currency in Indian Rupees (INR). Reply ONLY with the exact floating point number (e.g. 83.50 or 105.20 or 94.86). Do not include text, currency symbols, or extra characters.`;
@@ -135,12 +174,12 @@ async function getExchangeRate(country) {
   try {
     const rawNum = await callGroq(system, prompt);
     const match = rawNum.match(/[\d.]+/);
-    if (!match) return null;
+    if (!match) return getFallbackExchangeRate(country);
     const parsed = parseFloat(match[0]);
-    return isNaN(parsed) ? null : parsed;
+    return isNaN(parsed) ? getFallbackExchangeRate(country) : parsed;
   } catch (error) {
-    console.error('Groq Exchange Rate Error:', error.message);
-    return null;
+    console.warn('Groq Exchange Rate Warning, using fallback:', error.message);
+    return getFallbackExchangeRate(country);
   }
 }
 
