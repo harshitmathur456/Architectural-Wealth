@@ -2,6 +2,7 @@ import { useState, useRef } from 'react';
 import FutureGoalPlanner from './FutureGoalPlanner';
 import { formatWithCommas, parseRawNumber } from '../utils/formatters';
 import { JODHPUR_CAR_CATALOG, JODHPUR_BIKE_CATALOG } from '../data/vehicleData';
+import { DESTINATION_TRAVEL_DATA } from '../data/travelData';
 import { runClientSideAnalysis } from '../utils/clientLogicEngine';
 
 const API = import.meta.env.VITE_API_URL || '/api';
@@ -51,14 +52,45 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
   const [vehicleMentorAdvice, setVehicleMentorAdvice] = useState('');
   const [fetchingMentor, setFetchingMentor] = useState(false);
 
-  // Travel State
+  // Travel State (Flight Ticket Inflation & Budget Intelligence for Origin: New Delhi)
   const [travelConfig, setTravelConfig] = useState({
-    country: ''
+    countryKey: 'UK',
+    seasonKey: 'shoulder', // 'peak' | 'shoulder' | 'offPeak'
+    numDays: 7,
+    country: 'UK'
   });
   const [exchangeData, setExchangeData] = useState({ rate: null, loading: false, error: '' });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const getTravelBudgetDetails = () => {
+    const dest = DESTINATION_TRAVEL_DATA[travelConfig.countryKey] || DESTINATION_TRAVEL_DATA['UK'];
+    const season = dest.seasons[travelConfig.seasonKey] || dest.seasons.shoulder;
+    
+    // Flight fare from Delhi with seasonal inflation multiplier
+    const flightFare = Math.round(dest.baseFlightDelhiINR * season.flightMultiplier);
+    
+    // Daily stay & food calculation with seasonal hotel multiplier
+    const days = Number(travelConfig.numDays || dest.recommendedDays || 5);
+    const totalStay = Math.round(dest.baseDailyStayINR * days * season.hotelMultiplier);
+    
+    // Total budget = Flight fare + Stay & local expenses
+    const totalBudget = flightFare + totalStay;
+    
+    // Inflation percentage relative to base flight
+    const flightInflationPct = Math.round((season.flightMultiplier - 1) * 100);
+    
+    return {
+      dest,
+      season,
+      days,
+      flightFare,
+      totalStay,
+      totalBudget,
+      flightInflationPct
+    };
+  };
 
   const processStatementFile = async (file) => {
     if (!file) return;
@@ -422,6 +454,9 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
       calculatedGoalAmount = parseRawNumber(realEstateConfig.price);
     } else if (formData.goal === 'car' && vehicleConfig.priceRangeLakhs) {
       calculatedGoalAmount = vehicleConfig.priceRangeLakhs * 100000;
+    } else if (formData.goal === 'vacation') {
+      const { totalBudget } = getTravelBudgetDetails();
+      calculatedGoalAmount = totalBudget;
     } else if (formData.goalAmount) {
       calculatedGoalAmount = parseRawNumber(formData.goalAmount);
     }
@@ -886,43 +921,224 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
               )}
 
               {formData.goal === 'vacation' && (
-                <div className="goal-config-panel animate-in" style={{ marginTop: 24, padding: 16, background: 'var(--surface-container-low)', borderRadius: 'var(--radius-md)' }}>
-                  <h4 style={{ fontFamily: 'Manrope', fontSize: '0.85rem', marginBottom: 12, color: 'var(--primary)' }}>Travel Currency Exchange</h4>
-                  
-                  <div style={{ marginBottom: 16 }}>
-                    <label style={{ fontSize: '0.7rem', color: 'var(--outline)', fontWeight: 600 }}>Destination Country</label>
-                    <div style={{ display: 'flex', gap: 8 }}>
-                      <input 
-                        className="form-input" 
-                        type="text" 
-                        placeholder="e.g. USA, UK, Europe, Japan" 
-                        style={{ fontSize: '0.9rem', padding: '8px 4px', flex: 1 }}
-                        value={travelConfig.country}
-                        onChange={(e) => setTravelConfig(p => ({ ...p, country: e.target.value }))}
-                      />
-                      <button 
-                        type="button" 
-                        onClick={handleCheckExchange}
-                        disabled={exchangeData.loading}
-                        className="btn" 
-                        style={{ padding: '0 16px', fontSize: '0.75rem' }}
+                <div className="goal-config-panel animate-in" style={{ marginTop: 24, padding: 18, background: 'var(--surface-container-low)', borderRadius: 'var(--radius-md)' }}>
+                  {/* Header & Origin Badge */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 14 }}>
+                    <h4 style={{ fontFamily: 'Manrope', fontSize: '0.9rem', color: 'var(--primary)', margin: 0 }}>
+                      Travel Budget & Flight Ticket Intelligence
+                    </h4>
+                    <span style={{ 
+                      fontSize: '0.7rem', 
+                      background: 'rgba(77, 137, 255, 0.12)', 
+                      color: 'var(--primary)', 
+                      padding: '3px 8px', 
+                      borderRadius: 12,
+                      fontWeight: 600,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4
+                    }}>
+                      ✈️ Origin: New Delhi (DEL)
+                    </span>
+                  </div>
+
+                  {/* Destination & Duration Selectors */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 12, marginBottom: 16 }}>
+                    <div>
+                      <label style={{ fontSize: '0.7rem', color: 'var(--outline)', fontWeight: 600, display: 'block', marginBottom: 4 }}>
+                        Destination Country / Region
+                      </label>
+                      <select
+                        className="form-input"
+                        style={{ fontSize: '0.85rem', padding: '8px 6px', width: '100%' }}
+                        value={travelConfig.countryKey}
+                        onChange={(e) => {
+                          const k = e.target.value;
+                          setTravelConfig(p => ({ ...p, countryKey: k, country: k }));
+                        }}
                       >
-                        {exchangeData.loading ? '...' : 'Check Live'}
+                        {Object.keys(DESTINATION_TRAVEL_DATA).map(key => (
+                          <option key={key} value={key}>
+                            {DESTINATION_TRAVEL_DATA[key].countryName}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div>
+                      <label style={{ fontSize: '0.7rem', color: 'var(--outline)', fontWeight: 600, display: 'block', marginBottom: 4 }}>
+                        Trip Duration (Days)
+                      </label>
+                      <input
+                        className="form-input"
+                        type="number"
+                        min="1"
+                        max="60"
+                        style={{ fontSize: '0.85rem', padding: '8px 6px', width: '100%' }}
+                        value={travelConfig.numDays}
+                        onChange={(e) => setTravelConfig(p => ({ ...p, numDays: Math.max(1, parseInt(e.target.value) || 1) }))}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Seasonal Inflation & Fare Timing Selector */}
+                  <div style={{ marginBottom: 16 }}>
+                    <label style={{ fontSize: '0.7rem', color: 'var(--outline)', fontWeight: 600, display: 'block', marginBottom: 6 }}>
+                      Travel Timing & Flight Fare Inflation
+                    </label>
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 6 }}>
+                      <button
+                        type="button"
+                        onClick={() => setTravelConfig(p => ({ ...p, seasonKey: 'peak' }))}
+                        style={{
+                          padding: '8px 4px',
+                          borderRadius: 8,
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          border: travelConfig.seasonKey === 'peak' ? '2px solid #ef4444' : '1px solid var(--outline-variant)',
+                          background: travelConfig.seasonKey === 'peak' ? 'rgba(239, 68, 68, 0.12)' : '#fff',
+                          color: travelConfig.seasonKey === 'peak' ? '#ef4444' : 'var(--on-surface-variant)',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        👑 Peak Season
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setTravelConfig(p => ({ ...p, seasonKey: 'shoulder' }))}
+                        style={{
+                          padding: '8px 4px',
+                          borderRadius: 8,
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          border: travelConfig.seasonKey === 'shoulder' ? '2px solid var(--primary)' : '1px solid var(--outline-variant)',
+                          background: travelConfig.seasonKey === 'shoulder' ? 'rgba(77, 137, 255, 0.12)' : '#fff',
+                          color: travelConfig.seasonKey === 'shoulder' ? 'var(--primary)' : 'var(--on-surface-variant)',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        ⚖️ Shoulder Season
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setTravelConfig(p => ({ ...p, seasonKey: 'offPeak' }))}
+                        style={{
+                          padding: '8px 4px',
+                          borderRadius: 8,
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          border: travelConfig.seasonKey === 'offPeak' ? '2px solid #22c55e' : '1px solid var(--outline-variant)',
+                          background: travelConfig.seasonKey === 'offPeak' ? 'rgba(34, 197, 94, 0.12)' : '#fff',
+                          color: travelConfig.seasonKey === 'offPeak' ? '#15803d' : 'var(--on-surface-variant)',
+                          cursor: 'pointer'
+                        }}
+                      >
+                        🏷️ Best Value Season
                       </button>
                     </div>
                   </div>
 
+                  {/* Calculated Flight Ticket & Total Budget Cards */}
                   {(() => {
-                    if (exchangeData.error) return <p style={{ fontSize: '0.75rem', color: 'var(--error)' }}>{exchangeData.error}</p>;
-                    if (!exchangeData.rate) return <p style={{ fontSize: '0.75rem', color: 'var(--outline)' }}>Type a country and check live rate via Groq AI.</p>;
-                    
+                    const { dest, season, days, flightFare, totalStay, totalBudget, flightInflationPct } = getTravelBudgetDetails();
+
                     return (
-                      <div className="animate-in" style={{ padding: 12, borderRadius: 6, background: '#fff', border: '1px solid var(--surface-container)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--on-surface)' }}>
-                          1 {travelConfig.country.toUpperCase()} Unit
+                      <div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
+                          {/* Flight Card */}
+                          <div style={{ padding: '10px 12px', background: '#fff', borderRadius: 8, border: '1px solid var(--outline-variant)' }}>
+                            <div style={{ fontSize: '0.68rem', color: 'var(--outline)', fontWeight: 600 }}>
+                              Est. Flight Ticket (DEL ↔ {travelConfig.countryKey})
+                            </div>
+                            <div style={{ fontSize: '1.15rem', fontFamily: 'Manrope', fontWeight: 800, color: 'var(--on-surface)', marginTop: 2 }}>
+                              ₹{formatWithCommas(String(flightFare))}
+                            </div>
+                            <div style={{
+                              fontSize: '0.65rem',
+                              fontWeight: 700,
+                              marginTop: 4,
+                              color: flightInflationPct > 0 ? '#ef4444' : flightInflationPct < 0 ? '#15803d' : 'var(--primary)'
+                            }}>
+                              {flightInflationPct > 0 ? `▲ +${flightInflationPct}% Flight Inflation` : flightInflationPct < 0 ? `▼ ${flightInflationPct}% Flight Fare Discount` : '● Standard Base Fare'}
+                            </div>
+                          </div>
+
+                          {/* Hotel Stay Card */}
+                          <div style={{ padding: '10px 12px', background: '#fff', borderRadius: 8, border: '1px solid var(--outline-variant)' }}>
+                            <div style={{ fontSize: '0.68rem', color: 'var(--outline)', fontWeight: 600 }}>
+                              Hotel & Expenses ({days} Days)
+                            </div>
+                            <div style={{ fontSize: '1.15rem', fontFamily: 'Manrope', fontWeight: 800, color: 'var(--on-surface)', marginTop: 2 }}>
+                              ₹{formatWithCommas(String(totalStay))}
+                            </div>
+                            <div style={{ fontSize: '0.65rem', color: 'var(--outline)', marginTop: 4 }}>
+                              ~₹{formatWithCommas(String(Math.round(totalStay / days)))}/day
+                            </div>
+                          </div>
                         </div>
-                        <div style={{ fontSize: '1.2rem', fontFamily: 'Manrope', fontWeight: 800, color: 'var(--primary)' }}>
-                          = ₹{exchangeData.rate.toFixed(2)}
+
+                        {/* Total Recommended Travel Budget */}
+                        <div style={{
+                          padding: '12px 14px',
+                          borderRadius: 8,
+                          background: 'var(--surface-container)',
+                          border: '1px solid var(--outline-variant)',
+                          marginBottom: 16,
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between'
+                        }}>
+                          <div>
+                            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--on-surface)' }}>
+                              Total Travel & Flight Budget
+                            </div>
+                            <div style={{ fontSize: '0.68rem', color: 'var(--primary)', fontWeight: 600, marginTop: 2 }}>
+                              Flight + Accommodation + Local Expenses
+                            </div>
+                          </div>
+                          <div style={{ fontSize: '1.3rem', fontFamily: 'Manrope', fontWeight: 800, color: 'var(--primary)' }}>
+                            ₹{formatWithCommas(String(totalBudget))}
+                          </div>
+                        </div>
+
+                        {/* Best Time & Cheapest Month Insights */}
+                        <div style={{
+                          padding: '12px 14px',
+                          borderRadius: 8,
+                          background: 'rgba(77, 137, 255, 0.06)',
+                          borderLeft: '4px solid var(--primary)',
+                          marginBottom: 14
+                        }}>
+                          <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--primary)', marginBottom: 6 }}>
+                            🌟 Travel Timing & Best Month Insights
+                          </div>
+                          <div style={{ fontSize: '0.73rem', color: 'var(--on-surface)', lineHeight: 1.5, marginBottom: 4 }}>
+                            <strong>Best Time to Visit:</strong> {dest.bestMonthsToTravel}
+                          </div>
+                          <div style={{ fontSize: '0.73rem', color: '#15803d', fontWeight: 600, lineHeight: 1.5, marginBottom: 4 }}>
+                            <strong>Cheapest Flight Ticket Months from Delhi:</strong> {dest.cheapestMonthsToTravel}
+                          </div>
+                          <div style={{ fontSize: '0.7rem', color: 'var(--outline)', lineHeight: 1.4 }}>
+                            <em>{season.label}:</em> {season.note}
+                          </div>
+                        </div>
+
+                        {/* Currency Rate Widget */}
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'space-between',
+                          padding: '8px 12px',
+                          background: '#fff',
+                          borderRadius: 6,
+                          border: '1px solid var(--surface-container)'
+                        }}>
+                          <div style={{ fontSize: '0.73rem', fontWeight: 600, color: 'var(--on-surface)' }}>
+                            Currency: 1 {dest.currency}
+                          </div>
+                          <div style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--primary)' }}>
+                            = ₹{dest.exchangeRateINR.toFixed(2)} INR
+                          </div>
                         </div>
                       </div>
                     );
