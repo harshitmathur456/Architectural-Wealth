@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react';
 import FutureGoalPlanner from './FutureGoalPlanner';
 import { formatWithCommas, parseRawNumber } from '../utils/formatters';
+import { JODHPUR_CAR_CATALOG, JODHPUR_BIKE_CATALOG } from '../data/vehicleData';
 
 const API = import.meta.env.VITE_API_URL || '/api';
 
@@ -38,9 +39,12 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
     loanTenure: 20
   });
 
-  // Vehicle State
+  // Vehicle State (CarWale Jodhpur Catalog Integration)
   const [vehicleConfig, setVehicleConfig] = useState({
-    priceRangeLakhs: 5,
+    type: 'car', // 'car' | 'bike'
+    brand: 'Maruti Suzuki',
+    model: 'Brezza',
+    priceRangeLakhs: 9.4,
     downPayment: ''
   });
   const [vehicleMentorAdvice, setVehicleMentorAdvice] = useState('');
@@ -195,6 +199,52 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
     };
   };
 
+  // Vehicle Catalog Selection Handlers (CarWale Jodhpur Catalog)
+  const handleVehicleTypeChange = (newType) => {
+    const defaultBrand = newType === 'car' ? 'Maruti Suzuki' : 'Royal Enfield';
+    const catalog = newType === 'car' ? JODHPUR_CAR_CATALOG : JODHPUR_BIKE_CATALOG;
+    const defaultModelObj = catalog[defaultBrand][0];
+    setVehicleConfig({
+      type: newType,
+      brand: defaultBrand,
+      model: defaultModelObj.name,
+      priceRangeLakhs: defaultModelObj.priceLakhs,
+      downPayment: ''
+    });
+  };
+
+  const handleVehicleBrandChange = (brandName) => {
+    const catalog = vehicleConfig.type === 'car' ? JODHPUR_CAR_CATALOG : JODHPUR_BIKE_CATALOG;
+    const models = catalog[brandName] || [];
+    const defaultModelObj = models[0] || { name: 'Custom Model', priceLakhs: 5.0 };
+    setVehicleConfig(prev => ({
+      ...prev,
+      brand: brandName,
+      model: defaultModelObj.name,
+      priceRangeLakhs: defaultModelObj.priceLakhs
+    }));
+  };
+
+  const handleVehicleModelChange = (modelName) => {
+    if (modelName === 'custom') {
+      setVehicleConfig(prev => ({
+        ...prev,
+        model: 'custom'
+      }));
+      return;
+    }
+    const catalog = vehicleConfig.type === 'car' ? JODHPUR_CAR_CATALOG : JODHPUR_BIKE_CATALOG;
+    const models = catalog[vehicleConfig.brand] || [];
+    const selectedObj = models.find(m => m.name === modelName);
+    if (selectedObj) {
+      setVehicleConfig(prev => ({
+        ...prev,
+        model: modelName,
+        priceRangeLakhs: selectedObj.priceLakhs
+      }));
+    }
+  };
+
   // Helper calculations for Vehicle
   const getVehicleAffordability = () => {
     const dp = parseRawNumber(vehicleConfig.downPayment);
@@ -223,6 +273,10 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
         body: JSON.stringify({
           income: inc,
           expenses: exp,
+          vehicleType: vehicleConfig.type === 'car' ? 'Car' : 'Bike/Two-Wheeler',
+          brand: vehicleConfig.brand,
+          model: vehicleConfig.model === 'custom' ? 'Custom Model' : vehicleConfig.model,
+          location: 'Jodhpur',
           price: vehicleConfig.priceRangeLakhs * 100000,
           downPayment: parseRawNumber(vehicleConfig.downPayment),
           emi
@@ -483,27 +537,156 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
               )}
 
               {formData.goal === 'car' && (
-                <div className="goal-config-panel animate-in" style={{ marginTop: 24, padding: 16, background: 'var(--surface-container-low)', borderRadius: 'var(--radius-md)' }}>
-                  <h4 style={{ fontFamily: 'Manrope', fontSize: '0.85rem', marginBottom: 12, color: 'var(--primary)' }}>Vehicle Affordability Engine</h4>
+                <div className="goal-config-panel animate-in" style={{ marginTop: 24, padding: 18, background: 'var(--surface-container-low)', borderRadius: 'var(--radius-md)' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+                    <h4 style={{ fontFamily: 'Manrope', fontSize: '0.9rem', color: 'var(--primary)', margin: 0 }}>
+                      Vehicle Affordability Engine
+                    </h4>
+                    <span style={{ 
+                      fontSize: '0.7rem', 
+                      background: 'rgba(77, 137, 255, 0.12)', 
+                      color: 'var(--primary)', 
+                      padding: '3px 8px', 
+                      borderRadius: 12,
+                      fontWeight: 600,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 4
+                    }}>
+                      📍 Jodhpur, RJ (CarWale Prices)
+                    </span>
+                  </div>
                   
+                  {/* Category Toggle: Car vs Bike */}
+                  <div style={{ display: 'flex', gap: 8, marginBottom: 16 }}>
+                    <button
+                      type="button"
+                      onClick={() => handleVehicleTypeChange('car')}
+                      style={{
+                        flex: 1,
+                        padding: '8px 12px',
+                        borderRadius: 8,
+                        fontSize: '0.8rem',
+                        fontWeight: 700,
+                        border: vehicleConfig.type === 'car' ? '2px solid var(--primary)' : '1px solid var(--outline-variant)',
+                        background: vehicleConfig.type === 'car' ? 'var(--surface-container)' : '#fff',
+                        color: vehicleConfig.type === 'car' ? 'var(--primary)' : 'var(--on-surface-variant)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 6
+                      }}
+                    >
+                      🚗 Car (CarWale Catalog)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleVehicleTypeChange('bike')}
+                      style={{
+                        flex: 1,
+                        padding: '8px 12px',
+                        borderRadius: 8,
+                        fontSize: '0.8rem',
+                        fontWeight: 700,
+                        border: vehicleConfig.type === 'bike' ? '2px solid var(--primary)' : '1px solid var(--outline-variant)',
+                        background: vehicleConfig.type === 'bike' ? 'var(--surface-container)' : '#fff',
+                        color: vehicleConfig.type === 'bike' ? 'var(--primary)' : 'var(--on-surface-variant)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: 6
+                      }}
+                    >
+                      🏍️ Bike / Scooter
+                    </button>
+                  </div>
+
+                  {/* Dropdowns Grid: Brand & Model */}
+                  {(() => {
+                    const catalog = vehicleConfig.type === 'car' ? JODHPUR_CAR_CATALOG : JODHPUR_BIKE_CATALOG;
+                    const brands = Object.keys(catalog);
+                    const models = catalog[vehicleConfig.brand] || [];
+
+                    return (
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
+                        <div>
+                          <label style={{ fontSize: '0.7rem', color: 'var(--outline)', fontWeight: 600, display: 'block', marginBottom: 4 }}>
+                            {vehicleConfig.type === 'car' ? 'Car Company / Brand' : 'Bike Company / Brand'}
+                          </label>
+                          <select 
+                            className="form-input" 
+                            style={{ fontSize: '0.85rem', padding: '8px 6px', width: '100%' }}
+                            value={vehicleConfig.brand}
+                            onChange={(e) => handleVehicleBrandChange(e.target.value)}
+                          >
+                            {brands.map(b => (
+                              <option key={b} value={b}>{b}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label style={{ fontSize: '0.7rem', color: 'var(--outline)', fontWeight: 600, display: 'block', marginBottom: 4 }}>
+                            Select Model
+                          </label>
+                          <select 
+                            className="form-input" 
+                            style={{ fontSize: '0.85rem', padding: '8px 6px', width: '100%' }}
+                            value={vehicleConfig.model}
+                            onChange={(e) => handleVehicleModelChange(e.target.value)}
+                          >
+                            {models.map(m => (
+                              <option key={m.name} value={m.name}>
+                                {m.name} (₹{m.priceLakhs}L)
+                              </option>
+                            ))}
+                            <option value="custom">Custom / Other Model</option>
+                          </select>
+                        </div>
+                      </div>
+                    );
+                  })()}
+
+                  {/* Selected Model Jodhpur On-Road Price Badge */}
+                  <div style={{ 
+                    padding: '10px 14px', 
+                    borderRadius: 8, 
+                    background: 'var(--surface-container)', 
+                    border: '1px solid var(--outline-variant)',
+                    marginBottom: 16,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between'
+                  }}>
+                    <div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--outline)', fontWeight: 600 }}>
+                        {vehicleConfig.model === 'custom' ? 'Custom Vehicle Price' : `${vehicleConfig.brand} ${vehicleConfig.model}`}
+                      </div>
+                      <div style={{ fontSize: '0.68rem', color: 'var(--primary)', fontWeight: 600 }}>
+                        On-Road Price in Jodhpur (Ex-Showroom + RTO + Ins.)
+                      </div>
+                    </div>
+                    <div style={{ fontSize: '1.25rem', fontFamily: 'Manrope', fontWeight: 800, color: 'var(--primary)' }}>
+                      ₹{formatWithCommas(String(Math.round(vehicleConfig.priceRangeLakhs * 100000)))}
+                    </div>
+                  </div>
+
+                  {/* Manual Slider to adjust target budget */}
                   <div style={{ marginBottom: 16 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 6 }}>
-                      <label style={{ fontSize: '0.7rem', color: 'var(--outline)', fontWeight: 600 }}>Target Price Range (Lakhs)</label>
-                      <span style={{ fontSize: '0.9rem', fontWeight: 800, color: 'var(--primary)', fontFamily: 'Manrope' }}>₹{vehicleConfig.priceRangeLakhs}L</span>
+                      <label style={{ fontSize: '0.7rem', color: 'var(--outline)', fontWeight: 600 }}>Adjust Target Budget (Lakhs)</label>
+                      <span style={{ fontSize: '0.85rem', fontWeight: 800, color: 'var(--primary)', fontFamily: 'Manrope' }}>₹{vehicleConfig.priceRangeLakhs}L</span>
                     </div>
                     <input 
                       type="range" 
-                      min="1" 
-                      max="50" 
-                      step="1"
+                      min="0.5" 
+                      max="75" 
+                      step="0.1"
                       style={{ width: '100%', accentColor: 'var(--primary)' }}
                       value={vehicleConfig.priceRangeLakhs}
-                      onChange={(e) => setVehicleConfig(p => ({ ...p, priceRangeLakhs: e.target.value }))}
+                      onChange={(e) => setVehicleConfig(p => ({ ...p, priceRangeLakhs: parseFloat(e.target.value) || 0.5 }))}
                     />
-                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.65rem', color: 'var(--outline-variant)', marginTop: 4 }}>
-                      <span>₹1L</span>
-                      <span>₹50L</span>
-                    </div>
                   </div>
 
                   <div style={{ marginBottom: 16 }}>
@@ -524,7 +707,7 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
                       Est. Auto Loan EMI (5 Yrs @ 8.5%)
                     </div>
                     <div style={{ fontSize: '1.2rem', fontFamily: 'Manrope', fontWeight: 800, color: 'var(--primary)' }}>
-                      ₹{getVehicleAffordability().emi.toLocaleString()}
+                      ₹{getVehicleAffordability().emi.toLocaleString('en-IN')}
                     </div>
                   </div>
 
@@ -548,7 +731,7 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
                       gap: 8
                     }}
                   >
-                    {fetchingMentor ? 'Consulting Groq AI...' : '✨ Ask AI Mentor Assessment'}
+                    {fetchingMentor ? 'Consulting Groq AI...' : `✨ Ask AI Assessment for ${vehicleConfig.brand} ${vehicleConfig.model}`}
                   </button>
 
                   {vehicleMentorAdvice && (

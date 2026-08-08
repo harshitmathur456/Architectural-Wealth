@@ -102,22 +102,26 @@ async function chat(message, conversationHistory = [], userContext = {}) {
 /**
  * Vehicle Mentor powered by Groq AI
  */
-async function judgeVehicleAffordability(income, expenses, vehiclePrice, emi, downPayment) {
-  const system = `You are a strict but helpful financial truth-teller focusing on auto loans.`;
-  const prompt = `User income: ₹${income}
-User expenses: ₹${expenses}
-Net Surplus: ₹${income - expenses}
-Vehicle Price: ₹${vehiclePrice}
-Down Payment: ₹${downPayment}
-Calculated EMI: ₹${emi}
+async function judgeVehicleAffordability(income, expenses, vehiclePrice, emi, downPayment, vehicleDetails = {}) {
+  const { vehicleType = 'Car', brand = '', model = '', location = 'Jodhpur' } = vehicleDetails;
+  const vehicleName = brand && model ? `${brand} ${model}` : (vehicleType || 'Vehicle');
+  const system = `You are a strict but helpful financial advisor specializing in auto loans and vehicle purchases in India.`;
+  const prompt = `User Income: ₹${income.toLocaleString('en-IN')}/month
+User Expenses: ₹${expenses.toLocaleString('en-IN')}/month
+Net Monthly Surplus: ₹${(income - expenses).toLocaleString('en-IN')}
+Selected Vehicle: ${vehicleName} (${vehicleType})
+Target Location: ${location}, Rajasthan (On-Road Price)
+Total Vehicle Price: ₹${vehiclePrice.toLocaleString('en-IN')}
+Down Payment Available: ₹${downPayment ? downPayment.toLocaleString('en-IN') : 0}
+Calculated Monthly Loan EMI: ₹${emi.toLocaleString('en-IN')}
 
-Act as an AI mentor. Judge this purchase. Is it manageable? Is the EMI too high for their surplus? Tell them the harsh truth but keep it encouraging. Max 2 paragraphs. Format nicely.`;
+Act as an AI vehicle purchase mentor. Evaluate this purchase specifically for buying a ${vehicleName} in ${location}. Is it financially wise? Is the EMI manageable against their surplus? Mention local fuel/maintenance considerations for ${vehicleName}. Max 2 paragraphs. Format cleanly.`;
 
   try {
     return await callGroq(system, prompt);
   } catch (error) {
     console.error('Groq Vehicle Mentor Error:', error.message);
-    return "Fallback: Could not connect to AI Mentor. Please ensure your EMI is not exceeding 50% of your disposable income.";
+    return `Fallback Advice for ${vehicleName} in ${location}: Ensure your estimated loan EMI (₹${emi.toLocaleString('en-IN')}) does not exceed 50% of your disposable surplus (₹${(income - expenses).toLocaleString('en-IN')}).`;
   }
 }
 

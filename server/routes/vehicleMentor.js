@@ -15,7 +15,13 @@ router.post('/', async (req, res) => {
       Number(expenses), 
       Number(price), 
       Number(emi), 
-      Number(downPayment)
+      Number(downPayment),
+      {
+        vehicleType: req.body.vehicleType || 'Car',
+        brand: req.body.brand || '',
+        model: req.body.model || '',
+        location: req.body.location || 'Jodhpur'
+      }
     );
 
     res.json({
