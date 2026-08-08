@@ -4,6 +4,7 @@ import { formatWithCommas, parseRawNumber } from '../utils/formatters';
 import { JODHPUR_CAR_CATALOG, JODHPUR_BIKE_CATALOG } from '../data/vehicleData';
 import { DESTINATION_TRAVEL_DATA } from '../data/travelData';
 import { runClientSideAnalysis } from '../utils/clientLogicEngine';
+import { parsePdfStatementInBrowser } from '../utils/pdfParser';
 
 const API = import.meta.env.VITE_API_URL || '/api';
 
@@ -113,51 +114,37 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
         body: data
       });
 
-      const result = await res.json();
+      if (res.ok) {
+        const result = await res.json();
+        if (result.success && result.data) {
+          const extractedInc = result.data.income ? formatWithCommas(String(result.data.income)) : '';
+          const extractedExp = result.data.expenses ? formatWithCommas(String(result.data.expenses)) : '';
 
-      if (result.success && result.data) {
-        const extractedInc = result.data.income ? formatWithCommas(String(result.data.income)) : '';
-        const extractedExp = result.data.expenses ? formatWithCommas(String(result.data.expenses)) : '';
+          setFormData(prev => ({
+            ...prev,
+            income: extractedInc || prev.income,
+            expenses: extractedExp || prev.expenses
+          }));
 
-        setFormData(prev => ({
-          ...prev,
-          income: extractedInc || prev.income,
-          expenses: extractedExp || prev.expenses
-        }));
+          setStatementFile({
+            name: file.name,
+            size: (file.size / 1024).toFixed(1) + ' KB'
+          });
 
-        setStatementFile({
-          name: file.name,
-          size: (file.size / 1024).toFixed(1) + ' KB'
-        });
-
-        setStatementSuccess(result.data.summary || `Extracted Salary (₹${extractedInc}) and Expenses (₹${extractedExp}) from PDF!`);
-      } else {
-        // Fallback for sample PDF or text PDF
-        const extractedInc = '1,25,000';
-        const extractedExp = '42,500';
-
-        setFormData(prev => ({
-          ...prev,
-          income: extractedInc,
-          expenses: extractedExp
-        }));
-
-        setStatementFile({
-          name: file.name,
-          size: (file.size / 1024).toFixed(1) + ' KB'
-        });
-
-        setStatementSuccess(`Extracted Salary (₹${extractedInc}) and Monthly Expenses (₹${extractedExp}) from ${file.name}!`);
+          setStatementSuccess(result.data.summary || `Extracted Salary (₹${extractedInc}) and Expenses (₹${extractedExp}) from PDF!`);
+          return;
+        }
       }
-    } catch (err) {
-      console.warn('Backend parse error, using statement fallback:', err);
-      const extractedInc = '1,25,000';
-      const extractedExp = '42,500';
+
+      // Browser client PDF parsing fallback
+      const parsedData = await parsePdfStatementInBrowser(file);
+      const incStr = formatWithCommas(String(parsedData.income));
+      const expStr = formatWithCommas(String(parsedData.expenses));
 
       setFormData(prev => ({
         ...prev,
-        income: extractedInc,
-        expenses: extractedExp
+        income: incStr,
+        expenses: expStr
       }));
 
       setStatementFile({
@@ -165,7 +152,29 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
         size: (file.size / 1024).toFixed(1) + ' KB'
       });
 
-      setStatementSuccess(`Extracted Salary (₹${extractedInc}) and Monthly Expenses (₹${extractedExp}) from ${file.name}!`);
+      setStatementSuccess(parsedData.summary || `Extracted Salary (₹${incStr}) and Monthly Expenses (₹${expStr}) from ${file.name}!`);
+    } catch (err) {
+      console.warn('Backend parse error, executing browser PDF parser fallback:', err);
+      try {
+        const parsedData = await parsePdfStatementInBrowser(file);
+        const incStr = formatWithCommas(String(parsedData.income));
+        const expStr = formatWithCommas(String(parsedData.expenses));
+
+        setFormData(prev => ({
+          ...prev,
+          income: incStr,
+          expenses: expStr
+        }));
+
+        setStatementFile({
+          name: file.name,
+          size: (file.size / 1024).toFixed(1) + ' KB'
+        });
+
+        setStatementSuccess(parsedData.summary || `Extracted Salary (₹${incStr}) and Monthly Expenses (₹${expStr}) from ${file.name}!`);
+      } catch {
+        setStatementError('Could not process PDF statement. Please ensure it is a valid bank statement PDF.');
+      }
     } finally {
       setParsingStatement(false);
     }
