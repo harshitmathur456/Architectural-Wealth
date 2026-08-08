@@ -199,16 +199,19 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
     };
   };
 
-  // Vehicle Catalog Selection Handlers (CarWale Jodhpur Catalog)
+  // Vehicle Catalog Selection Handlers (CarWale Jodhpur Catalog & Versions)
   const handleVehicleTypeChange = (newType) => {
     const defaultBrand = newType === 'car' ? 'Maruti Suzuki' : 'Royal Enfield';
     const catalog = newType === 'car' ? JODHPUR_CAR_CATALOG : JODHPUR_BIKE_CATALOG;
-    const defaultModelObj = catalog[defaultBrand][0];
+    const defaultModelObj = catalog[defaultBrand]?.[0] || { name: 'Model', priceLakhs: 5.0, variants: [] };
+    const defaultVariantObj = defaultModelObj.variants?.[0];
+
     setVehicleConfig({
       type: newType,
       brand: defaultBrand,
       model: defaultModelObj.name,
-      priceRangeLakhs: defaultModelObj.priceLakhs,
+      variant: defaultVariantObj ? defaultVariantObj.name : 'Standard Variant',
+      priceRangeLakhs: defaultVariantObj ? defaultVariantObj.priceLakhs : defaultModelObj.priceLakhs,
       downPayment: ''
     });
   };
@@ -216,12 +219,15 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
   const handleVehicleBrandChange = (brandName) => {
     const catalog = vehicleConfig.type === 'car' ? JODHPUR_CAR_CATALOG : JODHPUR_BIKE_CATALOG;
     const models = catalog[brandName] || [];
-    const defaultModelObj = models[0] || { name: 'Custom Model', priceLakhs: 5.0 };
+    const defaultModelObj = models[0] || { name: 'Custom Model', priceLakhs: 5.0, variants: [] };
+    const defaultVariantObj = defaultModelObj.variants?.[0];
+
     setVehicleConfig(prev => ({
       ...prev,
       brand: brandName,
       model: defaultModelObj.name,
-      priceRangeLakhs: defaultModelObj.priceLakhs
+      variant: defaultVariantObj ? defaultVariantObj.name : 'Standard Variant',
+      priceRangeLakhs: defaultVariantObj ? defaultVariantObj.priceLakhs : defaultModelObj.priceLakhs
     }));
   };
 
@@ -229,19 +235,38 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
     if (modelName === 'custom') {
       setVehicleConfig(prev => ({
         ...prev,
-        model: 'custom'
+        model: 'custom',
+        variant: 'Custom Variant'
       }));
       return;
     }
     const catalog = vehicleConfig.type === 'car' ? JODHPUR_CAR_CATALOG : JODHPUR_BIKE_CATALOG;
     const models = catalog[vehicleConfig.brand] || [];
-    const selectedObj = models.find(m => m.name === modelName);
-    if (selectedObj) {
+    const selectedModel = models.find(m => m.name === modelName);
+    if (selectedModel) {
+      const defaultVariantObj = selectedModel.variants?.[0];
       setVehicleConfig(prev => ({
         ...prev,
         model: modelName,
-        priceRangeLakhs: selectedObj.priceLakhs
+        variant: defaultVariantObj ? defaultVariantObj.name : 'Standard Variant',
+        priceRangeLakhs: defaultVariantObj ? defaultVariantObj.priceLakhs : selectedModel.priceLakhs
       }));
+    }
+  };
+
+  const handleVehicleVariantChange = (variantName) => {
+    const catalog = vehicleConfig.type === 'car' ? JODHPUR_CAR_CATALOG : JODHPUR_BIKE_CATALOG;
+    const models = catalog[vehicleConfig.brand] || [];
+    const selectedModel = models.find(m => m.name === vehicleConfig.model);
+    if (selectedModel && selectedModel.variants) {
+      const selectedVariant = selectedModel.variants.find(v => v.name === variantName);
+      if (selectedVariant) {
+        setVehicleConfig(prev => ({
+          ...prev,
+          variant: variantName,
+          priceRangeLakhs: selectedVariant.priceLakhs
+        }));
+      }
     }
   };
 
@@ -603,54 +628,79 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
                     </button>
                   </div>
 
-                  {/* Dropdowns Grid: Brand & Model */}
+                  {/* Dropdowns Grid: Brand, Model & Version/Variant */}
                   {(() => {
                     const catalog = vehicleConfig.type === 'car' ? JODHPUR_CAR_CATALOG : JODHPUR_BIKE_CATALOG;
                     const brands = Object.keys(catalog);
                     const models = catalog[vehicleConfig.brand] || [];
+                    const selectedModelObj = models.find(m => m.name === vehicleConfig.model);
+                    const variants = selectedModelObj ? (selectedModelObj.variants || []) : [];
 
                     return (
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
-                        <div>
-                          <label style={{ fontSize: '0.7rem', color: 'var(--outline)', fontWeight: 600, display: 'block', marginBottom: 4 }}>
-                            {vehicleConfig.type === 'car' ? 'Car Company / Brand' : 'Bike Company / Brand'}
-                          </label>
-                          <select 
-                            className="form-input" 
-                            style={{ fontSize: '0.85rem', padding: '8px 6px', width: '100%' }}
-                            value={vehicleConfig.brand}
-                            onChange={(e) => handleVehicleBrandChange(e.target.value)}
-                          >
-                            {brands.map(b => (
-                              <option key={b} value={b}>{b}</option>
-                            ))}
-                          </select>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginBottom: 16 }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                          <div>
+                            <label style={{ fontSize: '0.7rem', color: 'var(--outline)', fontWeight: 600, display: 'block', marginBottom: 4 }}>
+                              {vehicleConfig.type === 'car' ? 'Car Company / Brand' : 'Bike Company / Brand'}
+                            </label>
+                            <select 
+                              className="form-input" 
+                              style={{ fontSize: '0.85rem', padding: '8px 6px', width: '100%' }}
+                              value={vehicleConfig.brand}
+                              onChange={(e) => handleVehicleBrandChange(e.target.value)}
+                            >
+                              {brands.map(b => (
+                                <option key={b} value={b}>{b}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label style={{ fontSize: '0.7rem', color: 'var(--outline)', fontWeight: 600, display: 'block', marginBottom: 4 }}>
+                              Select Model
+                            </label>
+                            <select 
+                              className="form-input" 
+                              style={{ fontSize: '0.85rem', padding: '8px 6px', width: '100%' }}
+                              value={vehicleConfig.model}
+                              onChange={(e) => handleVehicleModelChange(e.target.value)}
+                            >
+                              {models.map(m => (
+                                <option key={m.name} value={m.name}>
+                                  {m.name} (from ₹{m.priceLakhs}L)
+                                </option>
+                              ))}
+                              <option value="custom">Custom / Other Model</option>
+                            </select>
+                          </div>
                         </div>
-                        <div>
-                          <label style={{ fontSize: '0.7rem', color: 'var(--outline)', fontWeight: 600, display: 'block', marginBottom: 4 }}>
-                            Select Model
-                          </label>
-                          <select 
-                            className="form-input" 
-                            style={{ fontSize: '0.85rem', padding: '8px 6px', width: '100%' }}
-                            value={vehicleConfig.model}
-                            onChange={(e) => handleVehicleModelChange(e.target.value)}
-                          >
-                            {models.map(m => (
-                              <option key={m.name} value={m.name}>
-                                {m.name} (₹{m.priceLakhs}L)
-                              </option>
-                            ))}
-                            <option value="custom">Custom / Other Model</option>
-                          </select>
-                        </div>
+
+                        {/* Available Versions / Trims Dropdown */}
+                        {vehicleConfig.model !== 'custom' && variants.length > 0 && (
+                          <div>
+                            <label style={{ fontSize: '0.7rem', color: 'var(--outline)', fontWeight: 600, display: 'block', marginBottom: 4 }}>
+                              Available Version / Variant (CarWale Catalog)
+                            </label>
+                            <select
+                              className="form-input"
+                              style={{ fontSize: '0.85rem', padding: '8px 6px', width: '100%', borderColor: 'var(--primary)' }}
+                              value={vehicleConfig.variant}
+                              onChange={(e) => handleVehicleVariantChange(e.target.value)}
+                            >
+                              {variants.map(v => (
+                                <option key={v.name} value={v.name}>
+                                  {v.name} — ₹{v.priceLakhs} Lakhs (On-Road Jodhpur)
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        )}
                       </div>
                     );
                   })()}
 
-                  {/* Selected Model Jodhpur On-Road Price Badge */}
+                  {/* Selected Version Jodhpur On-Road Price Badge */}
                   <div style={{ 
-                    padding: '10px 14px', 
+                    padding: '12px 14px', 
                     borderRadius: 8, 
                     background: 'var(--surface-container)', 
                     border: '1px solid var(--outline-variant)',
@@ -660,14 +710,16 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
                     justifyContent: 'space-between'
                   }}>
                     <div>
-                      <div style={{ fontSize: '0.7rem', color: 'var(--outline)', fontWeight: 600 }}>
-                        {vehicleConfig.model === 'custom' ? 'Custom Vehicle Price' : `${vehicleConfig.brand} ${vehicleConfig.model}`}
+                      <div style={{ fontSize: '0.75rem', color: 'var(--on-surface)', fontWeight: 700 }}>
+                        {vehicleConfig.model === 'custom' 
+                          ? 'Custom Vehicle Price' 
+                          : `${vehicleConfig.brand} ${vehicleConfig.model} ${vehicleConfig.variant ? '• ' + vehicleConfig.variant : ''}`}
                       </div>
-                      <div style={{ fontSize: '0.68rem', color: 'var(--primary)', fontWeight: 600 }}>
-                        On-Road Price in Jodhpur (Ex-Showroom + RTO + Ins.)
+                      <div style={{ fontSize: '0.68rem', color: 'var(--primary)', fontWeight: 600, marginTop: 2 }}>
+                        📍 On-Road Price in Jodhpur (Ex-Showroom + RTO + Insurance)
                       </div>
                     </div>
-                    <div style={{ fontSize: '1.25rem', fontFamily: 'Manrope', fontWeight: 800, color: 'var(--primary)' }}>
+                    <div style={{ fontSize: '1.3rem', fontFamily: 'Manrope', fontWeight: 800, color: 'var(--primary)' }}>
                       ₹{formatWithCommas(String(Math.round(vehicleConfig.priceRangeLakhs * 100000)))}
                     </div>
                   </div>
