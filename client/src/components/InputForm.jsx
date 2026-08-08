@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import FutureGoalPlanner from './FutureGoalPlanner';
 import { formatWithCommas, parseRawNumber } from '../utils/formatters';
 
@@ -20,6 +20,14 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
     goal: 'house',
     goalAmount: '',
   });
+
+  // PDF Statement Ingestion State
+  const fileInputRef = useRef(null);
+  const [statementFile, setStatementFile] = useState(null);
+  const [parsingStatement, setParsingStatement] = useState(false);
+  const [statementSuccess, setStatementSuccess] = useState('');
+  const [statementError, setStatementError] = useState('');
+  const [isDragging, setIsDragging] = useState(false);
 
   // Real Estate State
   const [realEstateConfig, setRealEstateConfig] = useState({
@@ -46,6 +54,90 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+
+  const processStatementFile = async (file) => {
+    if (!file) return;
+
+    if (!file.name.toLowerCase().endsWith('.pdf') && file.type !== 'application/pdf') {
+      setStatementError('Please select a valid PDF file (.pdf).');
+      return;
+    }
+
+    setParsingStatement(true);
+    setStatementError('');
+    setStatementSuccess('');
+
+    try {
+      const data = new FormData();
+      data.append('file', file);
+
+      const res = await fetch(`${API}/parse-statement`, {
+        method: 'POST',
+        body: data
+      });
+
+      const result = await res.json();
+
+      if (result.success && result.data) {
+        const extractedInc = result.data.income ? formatWithCommas(String(result.data.income)) : '';
+        const extractedExp = result.data.expenses ? formatWithCommas(String(result.data.expenses)) : '';
+
+        setFormData(prev => ({
+          ...prev,
+          income: extractedInc || prev.income,
+          expenses: extractedExp || prev.expenses
+        }));
+
+        setStatementFile({
+          name: file.name,
+          size: (file.size / 1024).toFixed(1) + ' KB'
+        });
+
+        setStatementSuccess(result.data.summary || `Extracted Salary (₹${extractedInc}) and Expenses (₹${extractedExp}) from PDF!`);
+      } else {
+        setStatementError(result.error || 'Failed to extract statement data. Please ensure it is a text-based bank statement PDF.');
+      }
+    } catch (err) {
+      console.error('Error processing PDF statement:', err);
+      setStatementError('Could not upload or process statement PDF. Ensure backend server is running.');
+    } finally {
+      setParsingStatement(false);
+    }
+  };
+
+  const handleStatementFileChange = (e) => {
+    const selected = e.target.files && e.target.files[0];
+    if (selected) {
+      processStatementFile(selected);
+    }
+  };
+
+  const handleDragOver = (e) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      processStatementFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleClearStatement = () => {
+    setStatementFile(null);
+    setStatementSuccess('');
+    setStatementError('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+  };
+
 
   const handleFormattedChange = (e) => {
     const { name, value } = e.target;
@@ -558,19 +650,45 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
           </div>
 
           {/* Statement Upload UI */}
-          <div className="card" style={{ background: 'var(--surface-container-low)', padding: '22px 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', border: '2px dashed var(--outline-variant)' }}>
+          <div 
+            className="card" 
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            style={{ 
+              background: isDragging ? 'rgba(77, 137, 255, 0.08)' : 'var(--surface-container-low)', 
+              padding: '22px 20px', 
+              display: 'flex', 
+              flexDirection: 'column', 
+              alignItems: 'center', 
+              textAlign: 'center', 
+              border: isDragging ? '2px dashed var(--primary)' : '2px dashed var(--outline-variant)',
+              transition: 'all 0.2s ease-in-out'
+            }}
+          >
+            {/* Hidden PDF File Input */}
+            <input 
+              type="file" 
+              ref={fileInputRef} 
+              accept=".pdf,application/pdf" 
+              onChange={handleStatementFileChange} 
+              style={{ display: 'none' }} 
+            />
+
             <div style={{
               width: 48,
               height: 48,
               borderRadius: '50%',
-              background: 'var(--surface-container)',
+              background: parsingStatement ? 'rgba(77, 137, 255, 0.15)' : 'var(--surface-container)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               marginBottom: 12,
               color: 'var(--primary)'
             }}>
-              <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>upload_file</span>
+              <span className="material-symbols-outlined" style={{ fontSize: '24px' }}>
+                {parsingStatement ? 'sync' : 'upload_file'}
+              </span>
             </div>
             <h3 style={{
               fontFamily: 'Manrope, sans-serif',
@@ -582,19 +700,115 @@ export default function InputForm({ userEmail, onAnalysisComplete }) {
               Automated Ingestion
             </h3>
             <p style={{ fontSize: '0.78rem', color: 'var(--outline)', lineHeight: 1.6, marginBottom: 16 }}>
-              Upload your bank statements to automatically extract and categorize your salary and expenditure data via AI.
+              Upload your bank statements in PDF format to automatically extract and categorize your salary and expenditure data via AI.
             </p>
-            <button type="button" style={{ 
-              background: '#fff', 
-              border: '1px solid var(--surface-variant)', 
-              padding: '8px 16px', 
-              borderRadius: 20, 
-              fontSize: '0.75rem', 
-              fontWeight: 700, 
-              color: 'var(--primary)',
-              cursor: 'pointer'
-            }}>
-              Browse Statements
+
+            {/* Display Selected PDF file badge */}
+            {statementFile && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                background: 'var(--surface-container)',
+                padding: '6px 12px',
+                borderRadius: 16,
+                fontSize: '0.78rem',
+                fontWeight: 600,
+                color: 'var(--on-surface)',
+                marginBottom: 14,
+                width: '100%',
+                justifyContent: 'space-between',
+                border: '1px solid var(--outline-variant)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, overflow: 'hidden' }}>
+                  <span style={{ fontSize: '1rem' }}>📄</span>
+                  <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 160 }}>
+                    {statementFile.name}
+                  </span>
+                  <span style={{ fontSize: '0.7rem', color: 'var(--outline)' }}>({statementFile.size})</span>
+                </div>
+                <button
+                  type="button"
+                  onClick={handleClearStatement}
+                  title="Remove File"
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--outline)',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem',
+                    padding: '2px 4px',
+                    display: 'flex',
+                    alignItems: 'center'
+                  }}
+                >
+                  ✕
+                </button>
+              </div>
+            )}
+
+            {/* Success Message */}
+            {statementSuccess && (
+              <div style={{
+                background: 'rgba(74, 222, 128, 0.12)',
+                border: '1px solid rgba(74, 222, 128, 0.3)',
+                color: '#4ade80',
+                borderRadius: 8,
+                padding: '8px 12px',
+                fontSize: '0.75rem',
+                marginBottom: 14,
+                textAlign: 'left',
+                width: '100%'
+              }}>
+                ✓ {statementSuccess}
+              </div>
+            )}
+
+            {/* Error Message */}
+            {statementError && (
+              <div style={{
+                background: 'rgba(239, 68, 68, 0.12)',
+                border: '1px solid rgba(239, 68, 68, 0.3)',
+                color: '#f87171',
+                borderRadius: 8,
+                padding: '8px 12px',
+                fontSize: '0.75rem',
+                marginBottom: 14,
+                textAlign: 'left',
+                width: '100%'
+              }}>
+                ⚠️ {statementError}
+              </div>
+            )}
+
+            <button 
+              type="button" 
+              onClick={() => fileInputRef.current?.click()}
+              disabled={parsingStatement}
+              style={{ 
+                background: parsingStatement ? 'var(--surface-container)' : '#fff', 
+                border: '1px solid var(--surface-variant)', 
+                padding: '8px 18px', 
+                borderRadius: 20, 
+                fontSize: '0.75rem', 
+                fontWeight: 700, 
+                color: 'var(--primary)',
+                cursor: parsingStatement ? 'not-allowed' : 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6
+              }}
+            >
+              {parsingStatement ? (
+                <>
+                  <span className="material-symbols-outlined spin" style={{ fontSize: '14px' }}>sync</span>
+                  Analyzing PDF...
+                </>
+              ) : statementFile ? (
+                'Upload Another Statement'
+              ) : (
+                'Browse Statements'
+              )}
             </button>
           </div>
         </div>

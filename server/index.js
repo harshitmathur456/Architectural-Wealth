@@ -22,6 +22,8 @@ app.use('/api/chat', require('./routes/chat'));        // Chat with Mentor (Groq
 app.use('/api/exchange', require('./routes/exchange'));// Groq Dynamic Exchange
 app.use('/api/vehicle-mentor', require('./routes/vehicleMentor')); // Groq Vehicle Affordability
 app.use('/api/goal-planner', require('./routes/goalPlanner')); // Groq Goal Planner
+app.use('/api/parse-statement', require('./routes/parseStatement')); // PDF Bank Statement Ingestion
+
 
 // Health check
 app.get('/api/health', (req, res) => {
